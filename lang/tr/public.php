@@ -1,0 +1,167 @@
+<?php
+
+return [
+    'nav' => [
+        'home' => 'Ana Sayfa',
+        'services' => 'Hizmetler',
+        'gallery' => 'Galeri',
+        'transformations' => 'Değişimler',
+        'blog' => 'Blog',
+        'contact' => 'İletişim',
+        'calculators' => 'Hesaplayıcılar',
+    ],
+    'hero' => [
+        'badge' => 'Sınırları Zorla',
+        'title' => 'Gücünü Keşfet',
+        'subtitle' => 'Modern ekipman, uzman destek ve motivasyon dolu bir ortamda hedeflerine ulaş.',
+        'cta_primary' => 'Hemen Üye Ol',
+        'cta_secondary' => 'İletişime Geç',
+    ],
+    'alert' => [
+        'title' => 'Dikkat',
+    ],
+    'hours' => [
+        'title' => 'Çalışma Saatleri',
+        'days' => [
+            'monday' => 'Pazartesi',
+            'tuesday' => 'Salı',
+            'wednesday' => 'Çarşamba',
+            'thursday' => 'Perşembe',
+            'friday' => 'Cuma',
+            'saturday' => 'Cumartesi',
+            'sunday' => 'Pazar',
+        ],
+        'closed' => 'Kapalı',
+    ],
+    'pricing' => [
+        'title' => 'Üyelik Fiyatları',
+        'subtitle' => 'Şeffaf fiyatlandırma — KDV dahil',
+        'vat_included' => 'KDV Dahil',
+        'price' => 'Fiyat',
+        'months' => ':count Ay',
+        'duration' => 'Süre',
+        'campaign' => 'Kampanya',
+        'per_month' => '/ ay',
+        'campaigns' => [
+            'spring_campaign' => 'Bahar Kampanyası',
+        ],
+    ],
+    'services' => [
+        'title' => 'Neden Biz?',
+        'items' => [
+            'trainer_support' => [
+                'title' => '7/24 Antrenör Desteği',
+                'description' => 'Profesyonel antrenörlerimiz her an yanınızda.',
+            ],
+            'modern_equipment' => [
+                'title' => 'Modern Ekipman',
+                'description' => 'Son teknoloji fitness ekipmanlarıyla antrenman.',
+            ],
+            'group_classes' => [
+                'title' => 'Grup Dersleri',
+                'description' => 'Motivasyonu yüksek grup dersleri ve programlar.',
+            ],
+        ],
+    ],
+    'cta' => [
+        'title' => 'Harekete Geçmeye Hazır Mısın?',
+        'subtitle' => 'Hedeflerine ulaşmak için ilk adımı bugün at.',
+        'button' => 'Hemen Üye Ol',
+        'contact' => 'İletişime Geç',
+    ],
+    'footer' => [
+        'rights' => 'Tüm hakları saklıdır.',
+    ],
+    'language' => [
+        'switch' => 'Dil değiştir',
+    ],
+    'seo' => [
+        'default_description' => 'Modern ekipman, uzman antrenör desteği ve şeffaf fiyatlandırma ile spor salonu deneyimi.',
+    ],
+    'gallery_page' => [
+        'title' => 'Galeri',
+        'subtitle' => 'Salonumuzdan ve topluluğumuzdan kareler',
+        'all' => 'Tümü',
+        'view_instagram' => 'Instagram',
+        'empty' => 'Henüz görsel eklenmemiş.',
+    ],
+    'transformations_page' => [
+        'title' => 'Değişimler',
+        'subtitle' => 'Üyelerimizin inanılmaz dönüşüm hikayeleri',
+        'before' => 'Önce',
+        'after' => 'Sonra',
+        'empty' => 'Henüz değişim hikayesi eklenmemiş.',
+    ],
+    'blog_page' => [
+        'title' => 'Blog',
+        'subtitle' => 'Sağlık, fitness ve motivasyon yazıları',
+        'read_more' => 'Devamını Oku',
+        'empty' => 'Henüz yayınlanmış yazı yok.',
+        'back' => 'Bloga Dön',
+    ],
+    'contact_page' => [
+        'title' => 'İletişim',
+        'subtitle' => 'Bize ulaşın, sorularınızı yanıtlayalım',
+        'phone' => 'Telefon',
+        'email' => 'E-posta',
+        'address' => 'Adres',
+        'whatsapp' => 'WhatsApp ile Yaz',
+        'follow_us' => 'Bizi Takip Edin',
+        'social_feed' => 'Sosyal Medya',
+        'social_feed_note' => 'Son paylaşımlarımız için sosyal medya hesaplarımızı ziyaret edin.',
+    ],
+    'calculators_page' => [
+        'title' => 'Hesaplayıcılar',
+        'subtitle' => 'Hedeflerine uygun planlama araçları',
+        'calorie' => [
+            'title' => 'Kalori Hesabı',
+            'gender' => 'Cinsiyet',
+            'male' => 'Erkek',
+            'female' => 'Kadın',
+            'age' => 'Yaş',
+            'weight' => 'Kilo (kg)',
+            'height' => 'Boy (cm)',
+            'activity' => 'Aktivite',
+            'activity_low' => 'Düşük',
+            'activity_medium' => 'Orta',
+            'activity_high' => 'Yüksek',
+            'calculate' => 'Hesapla',
+            'result_title' => 'Hesaplama Başarılı',
+            'result' => 'Günlük kalori ihtiyacınız yaklaşık :calories kcal',
+            'result_note' => 'Bu sonuç örnek amaçlıdır. Kesin değerler için uzmanınıza danışın.',
+        ],
+        'macro' => [
+            'title' => 'Makro Hesabı',
+            'weight' => 'Kilo (kg)',
+            'goal' => 'Hedef',
+            'goal_cut' => 'Yağ Yakımı',
+            'goal_maintain' => 'Koruma',
+            'goal_bulk' => 'Kas Yapımı',
+            'calculate' => 'Hesapla',
+            'result_title' => 'Hesaplama Başarılı',
+            'protein' => 'Protein',
+            'carbs' => 'Karbonhidrat',
+            'fat' => 'Yağ',
+            'result_note' => 'Bu sonuç örnek amaçlıdır. Kesin değerler için uzmanınıza danışın.',
+        ],
+    ],
+    'services_page' => [
+        'title' => 'Hizmetlerimiz',
+        'subtitle' => 'Size özel fitness deneyimi',
+        'programs_title' => 'Örnek Programlar',
+        'programs' => [
+            'beginner' => [
+                'title' => 'Başlangıç Programı',
+                'description' => 'Fitness yolculuğuna yeni başlayanlar için 3 günlük temel program.',
+            ],
+            'strength' => [
+                'title' => 'Güç Antrenmanı',
+                'description' => 'Kas kütlesi ve güç artışı için 4 günlük split program.',
+            ],
+            'cardio' => [
+                'title' => 'Kardiyo & HIIT',
+                'description' => 'Yağ yakımı ve kondisyon için yoğun interval antrenmanları.',
+            ],
+        ],
+    ],
+];

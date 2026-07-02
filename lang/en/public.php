@@ -1,0 +1,167 @@
+<?php
+
+return [
+    'nav' => [
+        'home' => 'Home',
+        'services' => 'Services',
+        'gallery' => 'Gallery',
+        'transformations' => 'Transformations',
+        'blog' => 'Blog',
+        'contact' => 'Contact',
+        'calculators' => 'Calculators',
+    ],
+    'hero' => [
+        'badge' => 'Push Your Limits',
+        'title' => 'Discover Your Power',
+        'subtitle' => 'Reach your goals with modern equipment, expert support, and a motivating environment.',
+        'cta_primary' => 'Join Now',
+        'cta_secondary' => 'Contact Us',
+    ],
+    'alert' => [
+        'title' => 'Notice',
+    ],
+    'hours' => [
+        'title' => 'Opening Hours',
+        'days' => [
+            'monday' => 'Monday',
+            'tuesday' => 'Tuesday',
+            'wednesday' => 'Wednesday',
+            'thursday' => 'Thursday',
+            'friday' => 'Friday',
+            'saturday' => 'Saturday',
+            'sunday' => 'Sunday',
+        ],
+        'closed' => 'Closed',
+    ],
+    'pricing' => [
+        'title' => 'Membership Pricing',
+        'subtitle' => 'Transparent pricing — VAT included',
+        'vat_included' => 'VAT Included',
+        'price' => 'Price',
+        'months' => ':count Months',
+        'duration' => 'Duration',
+        'campaign' => 'Campaign',
+        'per_month' => '/ mo',
+        'campaigns' => [
+            'spring_campaign' => 'Spring Campaign',
+        ],
+    ],
+    'services' => [
+        'title' => 'Why Choose Us?',
+        'items' => [
+            'trainer_support' => [
+                'title' => '24/7 Trainer Support',
+                'description' => 'Our professional trainers are always by your side.',
+            ],
+            'modern_equipment' => [
+                'title' => 'Modern Equipment',
+                'description' => 'Train with state-of-the-art fitness equipment.',
+            ],
+            'group_classes' => [
+                'title' => 'Group Classes',
+                'description' => 'High-energy group classes and programs.',
+            ],
+        ],
+    ],
+    'cta' => [
+        'title' => 'Ready to Get Moving?',
+        'subtitle' => 'Take the first step toward your goals today.',
+        'button' => 'Join Now',
+        'contact' => 'Contact Us',
+    ],
+    'footer' => [
+        'rights' => 'All rights reserved.',
+    ],
+    'language' => [
+        'switch' => 'Change language',
+    ],
+    'seo' => [
+        'default_description' => 'Gym experience with modern equipment, expert trainer support and transparent pricing.',
+    ],
+    'gallery_page' => [
+        'title' => 'Gallery',
+        'subtitle' => 'Moments from our gym and community',
+        'all' => 'All',
+        'view_instagram' => 'Instagram',
+        'empty' => 'No images added yet.',
+    ],
+    'transformations_page' => [
+        'title' => 'Transformations',
+        'subtitle' => 'Incredible transformation stories from our members',
+        'before' => 'Before',
+        'after' => 'After',
+        'empty' => 'No transformation stories yet.',
+    ],
+    'blog_page' => [
+        'title' => 'Blog',
+        'subtitle' => 'Health, fitness and motivation articles',
+        'read_more' => 'Read More',
+        'empty' => 'No published posts yet.',
+        'back' => 'Back to Blog',
+    ],
+    'contact_page' => [
+        'title' => 'Contact',
+        'subtitle' => 'Get in touch, we are here to help',
+        'phone' => 'Phone',
+        'email' => 'Email',
+        'address' => 'Address',
+        'whatsapp' => 'Message on WhatsApp',
+        'follow_us' => 'Follow Us',
+        'social_feed' => 'Social Media',
+        'social_feed_note' => 'Visit our social media accounts for latest posts.',
+    ],
+    'calculators_page' => [
+        'title' => 'Calculators',
+        'subtitle' => 'Tools to plan your fitness goals',
+        'calorie' => [
+            'title' => 'Calorie Calculator',
+            'gender' => 'Gender',
+            'male' => 'Male',
+            'female' => 'Female',
+            'age' => 'Age',
+            'weight' => 'Weight (kg)',
+            'height' => 'Height (cm)',
+            'activity' => 'Activity',
+            'activity_low' => 'Low',
+            'activity_medium' => 'Medium',
+            'activity_high' => 'High',
+            'calculate' => 'Calculate',
+            'result_title' => 'Calculation Successful',
+            'result' => 'Your daily calorie need is approximately :calories kcal',
+            'result_note' => 'This is a sample result. Consult your trainer for exact values.',
+        ],
+        'macro' => [
+            'title' => 'Macro Calculator',
+            'weight' => 'Weight (kg)',
+            'goal' => 'Goal',
+            'goal_cut' => 'Fat Loss',
+            'goal_maintain' => 'Maintenance',
+            'goal_bulk' => 'Muscle Gain',
+            'calculate' => 'Calculate',
+            'result_title' => 'Calculation Successful',
+            'protein' => 'Protein',
+            'carbs' => 'Carbs',
+            'fat' => 'Fat',
+            'result_note' => 'This is a sample result. Consult your trainer for exact values.',
+        ],
+    ],
+    'services_page' => [
+        'title' => 'Our Services',
+        'subtitle' => 'A fitness experience tailored for you',
+        'programs_title' => 'Sample Programs',
+        'programs' => [
+            'beginner' => [
+                'title' => 'Beginner Program',
+                'description' => 'A 3-day foundational program for those new to fitness.',
+            ],
+            'strength' => [
+                'title' => 'Strength Training',
+                'description' => 'A 4-day split program for muscle mass and strength gains.',
+            ],
+            'cardio' => [
+                'title' => 'Cardio & HIIT',
+                'description' => 'High-intensity interval training for fat loss and conditioning.',
+            ],
+        ],
+    ],
+];
