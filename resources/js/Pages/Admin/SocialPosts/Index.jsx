@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function Index({ posts }) {
     const { t } = useTranslation('admin');
@@ -95,7 +96,7 @@ export default function Index({ posts }) {
                 {posts.map((post) => (
                     <div key={post.id} className="overflow-hidden rounded-xl border bg-white">
                         <a href={post.post_url} target="_blank" rel="noopener noreferrer">
-                            <img src={post.image_url} alt="" className="aspect-square w-full object-cover" />
+                            <img src={post.image_url} alt={post.caption_tr || post.platform} className="aspect-square w-full object-cover" />
                         </a>
                         <div className="p-4">
                             <div className="flex items-center justify-between">
@@ -106,7 +107,7 @@ export default function Index({ posts }) {
                             </div>
                             {post.caption_tr && <p className="mt-2 text-sm text-zinc-600">{post.caption_tr}</p>}
                             <button
-                                onClick={() => router.delete(route('social-posts.destroy', post.id))}
+                                onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('social-posts.destroy', post.id))}
                                 className="mt-3 text-sm text-red-600"
                             >
                                 {t('common.delete')}

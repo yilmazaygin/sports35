@@ -5,8 +5,10 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
+import Pagination from '@/Components/Admin/Pagination';
 
-export default function Index({ items }) {
+export default function Index({ items, pagination = [], search = '' }) {
     const { t } = useTranslation('admin');
     const form = useForm({
         name: '',
@@ -24,6 +26,7 @@ export default function Index({ items }) {
         <AdminLayout header={<h1 className="text-2xl font-bold">{t('transformations.title')}</h1>}>
             <Head title={t('transformations.title')} />
             <FlashMessage />
+            <form onSubmit={(e) => { e.preventDefault(); router.get(route('transformations.index'), { search: e.currentTarget.search.value }); }} className="mb-4 flex gap-2"><TextInput name="search" defaultValue={search} placeholder={t('common.search')} /><button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white">{t('common.search')}</button></form>
 
             <form onSubmit={(e) => { e.preventDefault(); form.post(route('transformations.store'), { forceFormData: true, onSuccess: () => form.reset() }); }}
                 className="mb-8 grid gap-4 rounded-xl border bg-white p-6 sm:grid-cols-2">
@@ -45,17 +48,18 @@ export default function Index({ items }) {
             <div className="space-y-6">
                 {items.map((item) => (
                     <div key={item.id} className="flex gap-4 rounded-xl border bg-white p-4">
-                        <img src={item.before_url} alt="" className="h-24 w-24 rounded object-cover" />
-                        <img src={item.after_url} alt="" className="h-24 w-24 rounded object-cover" />
+                        <img src={item.before_url} alt={`${t('transformations.before')}: ${item.name}`} className="h-24 w-24 rounded object-cover" />
+                        <img src={item.after_url} alt={`${t('transformations.after')}: ${item.name}`} className="h-24 w-24 rounded object-cover" />
                         <div className="flex-1">
                             <p className="font-bold">{item.name}</p>
                             <p className="text-sm text-zinc-500">{item.duration_label_tr}</p>
-                            <button onClick={() => router.delete(route('transformations.destroy', item.id))}
+                            <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('transformations.destroy', item.id))}
                                 className="mt-2 text-sm text-red-600">{t('common.delete')}</button>
                         </div>
                     </div>
                 ))}
             </div>
+            <Pagination links={pagination} />
         </AdminLayout>
     );
 }

@@ -1,8 +1,13 @@
+import { trackEvent } from '@/utils/trackEvent';
+
 export default function CtaButton({
     children,
     href = '#',
     variant = 'primary',
     className = '',
+    analyticsEvent,
+    analyticsSource,
+    onClick,
     ...props
 }) {
     const base =
@@ -18,7 +23,7 @@ export default function CtaButton({
     };
 
     return (
-        <a href={href} className={`${base} ${variants[variant]} ${className}`} {...props}>
+        <a href={href} className={`${base} ${variants[variant]} ${className}`} onClick={(event) => { if (analyticsEvent) trackEvent(analyticsEvent, { cta_source: analyticsSource }); onClick?.(event); }} {...props}>
             {children}
         </a>
     );

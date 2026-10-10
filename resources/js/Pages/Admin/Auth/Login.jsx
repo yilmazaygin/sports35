@@ -4,6 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
+import Sports35Logo from '@/Components/Public/Sports35Logo';
 
 export default function Login({ status }) {
     const { t } = useTranslation('admin');
@@ -26,9 +27,7 @@ export default function Login({ status }) {
 
             <div className="w-full max-w-md">
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-black uppercase text-white">
-                        Sports<span className="text-brand-red">35</span>
-                    </h1>
+                    <Sports35Logo className="mx-auto h-24 w-[280px]" />
                     <p className="mt-2 text-sm text-zinc-400">{t('login.subtitle')}</p>
                 </div>
 

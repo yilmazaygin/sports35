@@ -56,7 +56,7 @@ export default function Index({ categories, items, activeCategory }) {
                                     >
                                         <img
                                             src={item.image_url}
-                                            alt={item.caption || ''}
+                                            alt={item.alt || item.caption || ''}
                                             className="aspect-square w-full object-cover transition group-hover:scale-105"
                                             loading="lazy"
                                         />
@@ -90,7 +90,7 @@ export default function Index({ categories, items, activeCategory }) {
                     className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
                     onClick={() => setLightbox(null)}
                 >
-                    <img src={lightbox.image_url} alt="" className="max-h-[90vh] max-w-full rounded-lg" />
+                    <img src={lightbox.image_url} alt={lightbox.alt || lightbox.caption || t('gallery_page.title')} className="max-h-[90vh] max-w-full rounded-lg" />
                 </div>
             )}
         </PublicLayout>

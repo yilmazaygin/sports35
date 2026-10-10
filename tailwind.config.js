@@ -14,9 +14,16 @@ export default {
         extend: {
             colors: {
                 brand: {
-                    black: '#0a0a0a',
-                    red: '#dc2626',
-                    'red-dark': '#991b1b',
+                    black: '#0B0B0B',
+                    surface: '#151515',
+                    elevated: '#1C1C1C',
+                    border: '#292929',
+                    orange: '#F25A0A',
+                    'orange-dark': '#D94800',
+                    // Compatibility aliases keep existing component behavior while
+                    // moving the rendered brand accent away from the legacy red.
+                    red: '#F25A0A',
+                    'red-dark': '#D94800',
                 },
             },
             fontFamily: {

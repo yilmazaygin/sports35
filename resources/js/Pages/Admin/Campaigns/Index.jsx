@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 const emptyCampaign = {
     label: '', title_tr: '', title_en: '', discount_percent: 10,
@@ -51,7 +52,7 @@ export default function Index({ campaigns }) {
                                 <div>
                                     <button onClick={() => { setEditingId(c.id); editForm.setData({ ...c, starts_at: formatDate(c.starts_at), ends_at: formatDate(c.ends_at) }); }}
                                         className="mr-3 text-brand-red">{t('common.edit')}</button>
-                                    <button onClick={() => router.delete(route('campaigns.destroy', c.id))} className="text-red-600">{t('common.delete')}</button>
+                                    <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('campaigns.destroy', c.id))} className="text-red-600">{t('common.delete')}</button>
                                 </div>
                             </div>
                         )}

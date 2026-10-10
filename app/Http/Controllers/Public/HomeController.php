@@ -18,6 +18,10 @@ class HomeController extends Controller
             'workingHours' => $this->content->workingHours(),
             'pricing' => $this->content->pricing(),
             'services' => $this->services(),
+            'facilities' => $this->content->facilities(),
+            'trainers' => $this->content->trainers(),
+            'groupClasses' => $this->content->groupClasses(),
+            'testimonials' => $this->content->testimonials(),
         ]);
     }
 

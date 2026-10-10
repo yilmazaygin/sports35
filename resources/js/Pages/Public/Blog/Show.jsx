@@ -30,7 +30,7 @@ export default function Show({ post }) {
                     <p className="mt-2 text-sm text-zinc-500">{post.published_at}</p>
 
                     {post.featured_image && (
-                        <img src={post.featured_image} alt="" className="mt-8 w-full rounded-xl object-cover" />
+                        <img src={post.featured_image} alt={post.title} className="mt-8 w-full rounded-xl object-cover" />
                     )}
 
                     <div

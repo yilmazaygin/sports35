@@ -16,6 +16,7 @@ class StoreMembershipPackageRequest extends FormRequest
         return [
             'duration_months' => ['required', 'integer', 'min:1', 'max:24', 'unique:membership_packages,duration_months'],
             'cash_price' => ['required', 'numeric', 'min:0'],
+            'card_price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
         ];

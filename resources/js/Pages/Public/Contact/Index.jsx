@@ -2,6 +2,7 @@ import CtaButton from '@/Components/Public/CtaButton';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Head } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { trackEvent } from '@/utils/trackEvent';
 
 export default function Index({ contact, socialPosts = [] }) {
     const { t } = useTranslation();
@@ -22,13 +23,13 @@ export default function Index({ contact, socialPosts = [] }) {
                         <div className="space-y-6">
                             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
                                 <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-500">{t('contact_page.phone')}</h2>
-                                <a href={`tel:${contact.phone}`} className="mt-2 block text-xl font-bold text-white hover:text-brand-red">
+                                <a href={`tel:${contact.phone}`} onClick={() => trackEvent('phone_click', { cta_source: 'contact_page' })} className="mt-2 block text-xl font-bold text-white hover:text-brand-red">
                                     {contact.phone}
                                 </a>
                             </div>
                             <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
                                 <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-500">{t('contact_page.email')}</h2>
-                                <a href={`mailto:${contact.email}`} className="mt-2 block text-xl font-bold text-white hover:text-brand-red">
+                                <a href={`mailto:${contact.email}`} onClick={() => trackEvent('email_click', { cta_source: 'contact_page' })} className="mt-2 block text-xl font-bold text-white hover:text-brand-red">
                                     {contact.email}
                                 </a>
                             </div>
@@ -36,7 +37,7 @@ export default function Index({ contact, socialPosts = [] }) {
                                 <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-500">{t('contact_page.address')}</h2>
                                 <p className="mt-2 text-lg text-white">{contact.address}</p>
                             </div>
-                            <CtaButton href={whatsappUrl} variant="primary" className="w-full sm:w-auto">
+                            <CtaButton href={whatsappUrl} variant="primary" analyticsEvent="whatsapp_click" analyticsSource="contact_page" className="w-full sm:w-auto">
                                 {t('contact_page.whatsapp')}
                             </CtaButton>
 

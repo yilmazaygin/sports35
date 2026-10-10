@@ -25,8 +25,6 @@ class MembershipPackageController extends Controller
     public function store(StoreMembershipPackageRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['card_price'] = $data['cash_price'];
-
         MembershipPackage::create($data);
 
         return back()->with('success', __('admin.messages.created'));
@@ -35,8 +33,6 @@ class MembershipPackageController extends Controller
     public function update(UpdateMembershipPackageRequest $request, MembershipPackage $membershipPackage): RedirectResponse
     {
         $data = $request->validated();
-        $data['card_price'] = $data['cash_price'];
-
         $membershipPackage->update($data);
 
         return back()->with('success', __('admin.messages.saved'));

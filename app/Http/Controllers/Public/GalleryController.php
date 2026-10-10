@@ -7,6 +7,7 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\GalleryCategory;
 use App\Models\GalleryItem;
+use App\Models\MediaFile;
 use App\Models\SiteSetting;
 use App\Models\Transformation;
 use Illuminate\Http\Request;
@@ -37,13 +38,25 @@ class GalleryController extends Controller
             $itemsQuery->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
         }
 
-        $items = $itemsQuery->get()->map(fn (GalleryItem $item) => [
-            'id' => $item->id,
-            'image_url' => $item->imageUrl(),
-            'caption' => $item->localizedCaption(),
-            'instagram_url' => $item->instagram_url,
-            'category_slug' => $item->category->slug,
-        ]);
+        $galleryItems = $itemsQuery->get();
+        $mediaAlt = MediaFile::query()
+            ->whereIn('path', $galleryItems->pluck('image_path'))
+            ->get()
+            ->keyBy('path');
+
+        $items = $galleryItems->map(function (GalleryItem $item) use ($mediaAlt) {
+            $media = $mediaAlt->get($item->image_path);
+            $alt = app()->getLocale() === 'en' ? $media?->alt_en : $media?->alt_tr;
+
+            return [
+                'id' => $item->id,
+                'image_url' => $item->imageUrl(),
+                'alt' => $alt ?: $item->localizedCaption() ?: __('public.gallery_page.title'),
+                'caption' => $item->localizedCaption(),
+                'instagram_url' => $item->instagram_url,
+                'category_slug' => $item->category->slug,
+            ];
+        });
 
         return Inertia::render('Public/Gallery/Index', [
             'categories' => $categories,

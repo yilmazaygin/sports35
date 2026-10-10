@@ -8,15 +8,27 @@ function formatPrice(amount) {
     }).format(amount);
 }
 
-function PriceCell({ original, discounted, showCampaign }) {
-    if (!showCampaign || !discounted) {
-        return <span className="text-2xl font-black text-white">{formatPrice(original)}</span>;
-    }
+function PriceCell({ cash, card, campaignPercent, labels }) {
+    const prices = [
+        { key: 'cash', value: cash, label: labels.cash },
+        ...(card !== cash ? [{ key: 'card', value: card, label: labels.card }] : []),
+    ];
 
     return (
-        <div className="flex flex-col items-center gap-1">
-            <span className="text-sm text-zinc-500 line-through">{formatPrice(original)}</span>
-            <span className="text-2xl font-black text-brand-red">{formatPrice(discounted)}</span>
+        <div className="grid gap-2 sm:grid-cols-2">
+            {prices.map((price) => {
+                const discounted = campaignPercent ? Math.round(price.value * (1 - campaignPercent / 100)) : null;
+
+                return (
+                    <div key={price.key} className="flex flex-col items-center gap-1">
+                        <span className="text-xs uppercase tracking-wider text-zinc-500">{price.label}</span>
+                        {discounted !== null ? <span className="text-xs text-zinc-500 line-through">{formatPrice(price.value)}</span> : null}
+                        <span className={`text-xl font-black ${discounted !== null ? 'text-brand-red' : 'text-white'}`}>
+                            {formatPrice(discounted !== null ? discounted : price.value)}
+                        </span>
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -25,14 +37,6 @@ export default function PricingTable({ pricing }) {
     const { t } = useTranslation();
     const { packages, campaign, vat_included } = pricing;
     const hasCampaign = Boolean(campaign?.active);
-
-    const applyDiscount = (price) => {
-        if (!hasCampaign) {
-            return null;
-        }
-
-        return Math.round(price * (1 - campaign.discount_percent / 100));
-    };
 
     return (
         <section id="pricing" className="bg-brand-black py-16 md:py-24">
@@ -78,11 +82,7 @@ export default function PricingTable({ pricing }) {
                                         )}
                                     </td>
                                     <td className="px-4 py-6 text-center">
-                                        <PriceCell
-                                            original={pkg.price}
-                                            discounted={applyDiscount(pkg.price)}
-                                            showCampaign={hasCampaign}
-                                        />
+                                        <PriceCell cash={pkg.cash_price} card={pkg.card_price} campaignPercent={hasCampaign ? campaign.discount_percent : null} labels={{ cash: t('pricing.cash'), card: t('pricing.card') }} />
                                     </td>
                                 </tr>
                             ))}

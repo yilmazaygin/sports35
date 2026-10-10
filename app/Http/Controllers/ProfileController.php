@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,6 +51,18 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        $isFinalActiveOwner = $user->isOwner()
+            && $user->is_active
+            && ! User::query()
+                ->where('role', 'owner')
+                ->where('is_active', true)
+                ->whereKeyNot($user->getKey())
+                ->exists();
+
+        if ($isFinalActiveOwner) {
+            return back()->with('error', 'At least one active owner account must remain.');
+        }
 
         Auth::logout();
 

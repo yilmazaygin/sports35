@@ -11,16 +11,21 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
 
 class BlogPostController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->trim()->toString();
+        $status = $request->string('status')->toString();
         return Inertia::render('Admin/BlogPosts/Index', [
             'posts' => BlogPost::query()
                 ->with('category:id,name_tr,name_en')
-                ->latest()
-                ->get(),
+                ->when($search !== '', fn ($q) => $q->where(function ($query) use ($search) { $query->where('title_tr', 'like', "%{$search}%")->orWhere('title_en', 'like', "%{$search}%"); }))
+                ->when(in_array($status, ['published', 'draft'], true), fn ($q) => $q->where('is_published', $status === 'published'))
+                ->latest()->paginate(20)->withQueryString(),
+            'search' => $search, 'status' => $status,
         ]);
     }
 

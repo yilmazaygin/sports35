@@ -41,10 +41,10 @@ npm run build
 
 | Ortam | URL |
 |-------|-----|
-| Ziyaretçi sitesi (local) | http://localhost:8081 |
-| Yönetim paneli (local) | http://localhost:8081/admin/login |
-| Ziyaretçi (subdomain) | http://sports35.test:8081 |
-| Admin (subdomain) | http://admin.sports35.test:8081 |
+| Ziyaretçi sitesi (local) | http://localhost:3001 |
+| Yönetim paneli (local) | http://localhost:3001/admin/login |
+| Ziyaretçi (subdomain) | http://sports35.test:3001 |
+| Admin (subdomain) | http://admin.sports35.test:3001 |
 
 Subdomain testi için `/etc/hosts` dosyasına ekleyin:
 
@@ -52,12 +52,11 @@ Subdomain testi için `/etc/hosts` dosyasına ekleyin:
 127.0.0.1 sports35.test admin.sports35.test
 ```
 
-### Varsayılan Admin Hesabı
+### Yerel Admin Hesabı
 
-- **E-posta:** admin@sports35.test
-- **Şifre:** password
+Geliştirme ve test ortamlarında yerel çalışma kolaylığı için seed işlemi bir geliştirme admin hesabı oluşturabilir. Bu hesap ve bilgileri production ortamında kullanılmamalıdır ve bu belgede paylaşılmamaktadır.
 
-> Canlıya almadan önce şifreyi mutlaka değiştirin.
+Production seed işlemi, bilinen bir varsayılan hesap oluşturmaz. Production için `SPORTS35_OWNER_EMAIL` ve `SPORTS35_OWNER_PASSWORD` değerleri source control dışında, güvenli ortam değişkenleri olarak sağlanmalıdır; bu değerler eksikse seed işlemi durur.
 
 ## Geliştirme
 

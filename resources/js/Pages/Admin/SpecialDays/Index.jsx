@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 const empty = {
     date: '', type: 'other', message_tr: '', message_en: '',
@@ -51,7 +52,7 @@ export default function Index({ specialDays, types }) {
                                 <div>
                                     <button onClick={() => { setEditingId(day.id); editForm.setData({ ...day, opens_at: day.opens_at?.slice(0,5) || '', closes_at: day.closes_at?.slice(0,5) || '' }); }}
                                         className="mr-3 text-brand-red">{t('common.edit')}</button>
-                                    <button onClick={() => router.delete(route('special-days.destroy', day.id))} className="text-red-600">{t('common.delete')}</button>
+                                    <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('special-days.destroy', day.id))} className="text-red-600">{t('common.delete')}</button>
                                 </div>
                             </div>
                         )}

@@ -17,11 +17,11 @@ export default function BeforeAfterSlider({ item }) {
             </div>
 
             <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-zinc-800">
-                <img src={item.after_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <img src={item.after_url} alt={`${t('transformations_page.after')}: ${item.name}`} className="absolute inset-0 h-full w-full object-cover" />
                 <div className="absolute inset-0 overflow-hidden" style={{ width: `${pos}%` }}>
                     <img
                         src={item.before_url}
-                        alt=""
+                        alt={`${t('transformations_page.before')}: ${item.name}`}
                         className="h-full max-w-none object-cover"
                         style={{ width: `${pos > 0 ? (100 / pos) * 100 : 100}%` }}
                     />

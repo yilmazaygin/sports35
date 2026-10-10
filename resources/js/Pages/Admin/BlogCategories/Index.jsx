@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function Index({ categories }) {
     const { t } = useTranslation('admin');
@@ -38,7 +39,7 @@ export default function Index({ categories }) {
                                 <span>{cat.name_tr} / {cat.name_en}</span>
                                 <div>
                                     <button onClick={() => { setEditingId(cat.id); editForm.setData(cat); }} className="mr-3 text-brand-red">{t('common.edit')}</button>
-                                    <button onClick={() => router.delete(route('blog-categories.destroy', cat.id))} className="text-red-600">{t('common.delete')}</button>
+                                    <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('blog-categories.destroy', cat.id))} className="text-red-600">{t('common.delete')}</button>
                                 </div>
                             </>
                         )}

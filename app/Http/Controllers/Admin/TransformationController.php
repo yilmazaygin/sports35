@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateTransformationRequest;
 use App\Models\Transformation;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,10 +17,12 @@ class TransformationController extends Controller
 {
     public function __construct(private ImageOptimizer $imageOptimizer) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->trim()->toString();
+        $items = Transformation::query()->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))->orderBy('sort_order')->paginate(20)->withQueryString();
         return Inertia::render('Admin/Transformations/Index', [
-            'items' => Transformation::query()->orderBy('sort_order')->get()->map(fn ($t) => [
+            'items' => $items->getCollection()->map(fn ($t) => [
                 'id' => $t->id,
                 'name' => $t->name,
                 'before_url' => $t->beforeImageUrl(),
@@ -31,6 +34,8 @@ class TransformationController extends Controller
                 'sort_order' => $t->sort_order,
                 'is_active' => $t->is_active,
             ]),
+            'pagination' => $items->toArray()['links'],
+            'search' => $search,
         ]);
     }
 

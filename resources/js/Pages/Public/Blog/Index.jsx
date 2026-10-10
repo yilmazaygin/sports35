@@ -26,7 +26,7 @@ export default function Index({ posts }) {
                                     className="group overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 transition hover:border-brand-red/30"
                                 >
                                     {post.featured_image && (
-                                        <img src={post.featured_image} alt="" className="aspect-video w-full object-cover" />
+                                        <img src={post.featured_image} alt={post.title} className="aspect-video w-full object-cover" />
                                     )}
                                     <div className="p-5">
                                         {post.category && (

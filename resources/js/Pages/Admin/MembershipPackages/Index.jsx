@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { confirmDelete } from '@/utils/confirmDelete';
 
 export default function Index({ packages }) {
     const { t } = useTranslation('admin');
@@ -14,6 +15,7 @@ export default function Index({ packages }) {
     const createForm = useForm({
         duration_months: 1,
         cash_price: '',
+        card_price: '',
         is_active: true,
         sort_order: packages.length + 1,
     });
@@ -21,6 +23,7 @@ export default function Index({ packages }) {
     const editForm = useForm({
         duration_months: 1,
         cash_price: '',
+        card_price: '',
         is_active: true,
         sort_order: 0,
     });
@@ -30,6 +33,7 @@ export default function Index({ packages }) {
         editForm.setData({
             duration_months: pkg.duration_months,
             cash_price: pkg.cash_price,
+            card_price: pkg.card_price,
             is_active: pkg.is_active,
             sort_order: pkg.sort_order,
         });
@@ -68,6 +72,11 @@ export default function Index({ packages }) {
                         <TextInput type="number" step="0.01" className="mt-1 w-full" value={createForm.data.cash_price}
                             onChange={(e) => createForm.setData('cash_price', e.target.value)} />
                     </div>
+                    <div>
+                        <InputLabel value={t('membership_packages.card_price')} />
+                        <TextInput type="number" step="0.01" className="mt-1 w-full" value={createForm.data.card_price}
+                            onChange={(e) => createForm.setData('card_price', e.target.value)} />
+                    </div>
                     <div className="flex items-end">
                         <label className="flex items-center gap-2">
                             <Checkbox checked={createForm.data.is_active}
@@ -89,6 +98,7 @@ export default function Index({ packages }) {
                         <tr>
                             <th className="px-4 py-3">{t('membership_packages.duration')}</th>
                             <th className="px-4 py-3">{t('membership_packages.price')}</th>
+                            <th className="px-4 py-3">{t('membership_packages.card_price')}</th>
                             <th className="px-4 py-3">{t('common.active')}</th>
                             <th className="px-4 py-3">{t('common.actions')}</th>
                         </tr>
@@ -107,6 +117,10 @@ export default function Index({ packages }) {
                                                 onChange={(e) => editForm.setData('cash_price', e.target.value)} />
                                         </td>
                                         <td className="px-4 py-3">
+                                            <TextInput type="number" step="0.01" className="w-28" value={editForm.data.card_price}
+                                                onChange={(e) => editForm.setData('card_price', e.target.value)} />
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <Checkbox checked={editForm.data.is_active}
                                                 onChange={(e) => editForm.setData('is_active', e.target.checked)} />
                                         </td>
@@ -120,10 +134,11 @@ export default function Index({ packages }) {
                                     <>
                                         <td className="px-4 py-3 font-medium">{pkg.duration_months} ay</td>
                                         <td className="px-4 py-3">₺{Number(pkg.cash_price).toLocaleString('tr-TR')}</td>
+                                        <td className="px-4 py-3">₺{Number(pkg.card_price).toLocaleString('tr-TR')}</td>
                                         <td className="px-4 py-3">{pkg.is_active ? t('common.active') : t('common.inactive')}</td>
                                         <td className="px-4 py-3">
                                             <button onClick={() => startEdit(pkg)} className="mr-3 text-brand-red">{t('common.edit')}</button>
-                                            <button onClick={() => router.delete(route('membership-packages.destroy', pkg.id))}
+                                            <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('membership-packages.destroy', pkg.id))}
                                                 className="text-red-600">{t('common.delete')}</button>
                                         </td>
                                     </>

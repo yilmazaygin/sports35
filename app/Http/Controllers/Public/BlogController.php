@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Support\SafeHtml;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -47,7 +48,7 @@ class BlogController extends Controller
         return Inertia::render('Public/Blog/Show', [
             'post' => [
                 'title' => $locale === 'en' ? $post->title_en : $post->title_tr,
-                'content' => $locale === 'en' ? $post->content_en : $post->content_tr,
+                'content' => SafeHtml::sanitize($locale === 'en' ? $post->content_en : $post->content_tr),
                 'excerpt' => $locale === 'en' ? $post->excerpt_en : $post->excerpt_tr,
                 'category' => $post->category?->localizedName(),
                 'published_at' => $post->published_at?->format('d.m.Y'),

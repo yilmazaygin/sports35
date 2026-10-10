@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-if (app()->environment('local')) {
+if (app()->environment(['local', 'testing'])) {
     Route::middleware('web')
         ->group(base_path('routes/public.php'));
 
