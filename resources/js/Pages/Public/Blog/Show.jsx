@@ -7,12 +7,7 @@ export default function Show({ post }) {
 
     return (
         <PublicLayout>
-            <Head>
-                <title>{post.meta_title}</title>
-                {post.meta_description && <meta name="description" content={post.meta_description} />}
-                <meta property="og:title" content={post.meta_title} />
-                {post.meta_description && <meta property="og:description" content={post.meta_description} />}
-            </Head>
+            <Head title={post.meta_title || post.title} />
 
             <article className="bg-brand-black py-12 md:py-16">
                 <div className="mx-auto max-w-3xl px-4">
@@ -27,10 +22,10 @@ export default function Show({ post }) {
                     )}
 
                     <h1 className="mt-2 text-3xl font-black text-white sm:text-4xl">{post.title}</h1>
-                    <p className="mt-2 text-sm text-zinc-500">{post.published_at}</p>
+                    <p className="mt-2 text-sm text-zinc-400">{post.published_at}</p>
 
                     {post.featured_image && (
-                        <img src={post.featured_image} alt={post.title} className="mt-8 w-full rounded-xl object-cover" />
+                        <img src={post.featured_image} alt={post.title || t('seo.blog_title')} className="mt-8 w-full rounded-xl object-cover" />
                     )}
 
                     <div

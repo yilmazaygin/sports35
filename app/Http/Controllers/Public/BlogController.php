@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Models\SiteSetting;
 use App\Support\SafeHtml;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,6 +14,8 @@ class BlogController extends Controller
 {
     public function index(): Response
     {
+        $this->ensureEnabled();
+
         $posts = BlogPost::query()
             ->with('category')
             ->where('is_published', true)
@@ -35,6 +38,8 @@ class BlogController extends Controller
 
     public function show(string $slug): Response
     {
+        $this->ensureEnabled();
+
         $post = BlogPost::query()
             ->with('category')
             ->where('slug', $slug)
@@ -57,6 +62,11 @@ class BlogController extends Controller
                 'meta_description' => $locale === 'en' ? $post->meta_description_en : $post->meta_description_tr,
             ],
         ]);
+    }
+
+    private function ensureEnabled(): void
+    {
+        abort_unless(SiteSetting::blogEnabled(), 404);
     }
 
     private function listItem(BlogPost $post): array

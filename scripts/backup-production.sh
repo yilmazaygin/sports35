@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${SPORTS35_ENV_FILE:-$ROOT_DIR/.env.production}"
-COMPOSE_FILE="$ROOT_DIR/docker-compose.production.yml"
+COMPOSE_FILES=(-f "$ROOT_DIR/docker-compose.production.yml" -f "$ROOT_DIR/docker-compose.proxy.yml")
 OUTPUT_DIR="${BACKUP_DIR:-$ROOT_DIR/storage/app/backups}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
 TIMESTAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
@@ -12,7 +12,7 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
 mkdir -p "$OUTPUT_DIR"
 
 compose() {
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+    docker compose --env-file "$ENV_FILE" "${COMPOSE_FILES[@]}" "$@"
 }
 
 echo "==> Checking production services"

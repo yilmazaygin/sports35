@@ -5,20 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreMediaRequest;
 use App\Http\Requests\Admin\UpdateMediaRequest;
-use App\Models\MediaFile;
 use App\Models\BlogPost;
-use App\Models\GalleryItem;
 use App\Models\Facility;
-use App\Models\Trainer;
+use App\Models\GalleryItem;
+use App\Models\MediaFile;
 use App\Models\Transformation;
-use App\Models\SocialPost;
-use App\Models\Testimonial;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
 
 class MediaController extends Controller
 {
@@ -29,35 +26,32 @@ class MediaController extends Controller
         $search = $request->string('search')->trim()->toString();
         $mime = $request->string('mime')->trim()->toString();
         $files = MediaFile::query()
-                ->when($search !== '', fn ($q) => $q->where('original_name', 'like', "%{$search}%"))
-                ->when($mime !== '', fn ($q) => $q->where('mime_type', 'like', "%{$mime}%"))
-                ->orderByDesc('created_at')
-                ->paginate(24)->withQueryString();
+            ->when($search !== '', fn ($q) => $q->where('original_name', 'like', "%{$search}%"))
+            ->when($mime !== '', fn ($q) => $q->where('mime_type', 'like', "%{$mime}%"))
+            ->orderByDesc('created_at')
+            ->paginate(24)->withQueryString();
         $paths = $files->getCollection()->pluck('path')->all();
         $referencedPaths = collect([
             BlogPost::whereIn('featured_image', $paths)->pluck('featured_image'),
             GalleryItem::whereIn('image_path', $paths)->pluck('image_path'),
             Facility::whereIn('image_path', $paths)->pluck('image_path'),
-            Trainer::whereIn('photo_path', $paths)->pluck('photo_path'),
             Transformation::whereIn('before_image', $paths)->pluck('before_image'),
             Transformation::whereIn('after_image', $paths)->pluck('after_image'),
-            SocialPost::whereIn('image_path', $paths)->pluck('image_path'),
-            Testimonial::whereIn('photo_path', $paths)->pluck('photo_path'),
         ])->flatten()->filter()->flip();
 
         return Inertia::render('Admin/Media/Index', [
             'files' => $files->through(fn (MediaFile $file) => [
-                    'id' => $file->id,
-                    'url' => $file->url(),
-                    'original_name' => $file->original_name,
-                    'mime_type' => $file->mime_type,
-                    'size' => $file->size,
-                    'collection' => $file->collection,
-                    'alt_tr' => $file->alt_tr,
-                    'alt_en' => $file->alt_en,
-                    'created_at' => $file->created_at?->toDateTimeString(),
-                    'referenced' => $referencedPaths->has($file->path),
-                ]),
+                'id' => $file->id,
+                'url' => $file->url(),
+                'original_name' => $file->original_name,
+                'mime_type' => $file->mime_type,
+                'size' => $file->size,
+                'collection' => $file->collection,
+                'alt_tr' => $file->alt_tr,
+                'alt_en' => $file->alt_en,
+                'created_at' => $file->created_at?->toDateTimeString(),
+                'referenced' => $referencedPaths->has($file->path),
+            ]),
             'search' => $search, 'mime' => $mime,
             'collections' => ['general', 'gallery', 'blog', 'hero'],
         ]);
@@ -108,9 +102,6 @@ class MediaController extends Controller
         return BlogPost::where('featured_image', $path)->exists()
             || GalleryItem::where('image_path', $path)->exists()
             || Facility::where('image_path', $path)->exists()
-            || Trainer::where('photo_path', $path)->exists()
-            || Transformation::where('before_image', $path)->orWhere('after_image', $path)->exists()
-            || SocialPost::where('image_path', $path)->exists()
-            || Testimonial::where('photo_path', $path)->exists();
+            || Transformation::where('before_image', $path)->orWhere('after_image', $path)->exists();
     }
 }

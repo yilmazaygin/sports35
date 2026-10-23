@@ -7,22 +7,19 @@ use App\Http\Requests\Admin\StoreGalleryCategoryRequest;
 use App\Http\Requests\Admin\StoreGalleryItemRequest;
 use App\Http\Requests\Admin\UpdateGalleryCategoryRequest;
 use App\Http\Requests\Admin\UpdateGalleryItemRequest;
+use App\Models\BlogPost;
+use App\Models\Facility;
 use App\Models\GalleryCategory;
 use App\Models\GalleryItem;
 use App\Models\MediaFile;
-use App\Models\BlogPost;
-use App\Models\Facility;
-use App\Models\Trainer;
 use App\Models\Transformation;
-use App\Models\SocialPost;
-use App\Models\Testimonial;
 use App\Services\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
 
 class GalleryController extends Controller
 {
@@ -36,12 +33,13 @@ class GalleryController extends Controller
             ->whereIn('path', $items->getCollection()->pluck('image_path'))
             ->get(['path', 'alt_tr', 'alt_en'])
             ->keyBy('path');
+
         return Inertia::render('Admin/Gallery/Index', [
             'categories' => GalleryCategory::query()->withCount('items')->orderBy('sort_order')->get(),
             'items' => $items->getCollection()->map(fn ($i) => [
                 'id' => $i->id,
                 'gallery_category_id' => $i->gallery_category_id,
-                'category_name' => $i->category->name_tr,
+                'category_name' => $i->category?->name_tr,
                 'image_url' => $i->imageUrl(),
                 'caption_tr' => $i->caption_tr,
                 'caption_en' => $i->caption_en,
@@ -62,7 +60,7 @@ class GalleryController extends Controller
 
         $mediaData = array_intersect_key($data, array_flip(['alt_tr', 'alt_en']));
         unset($data['alt_tr'], $data['alt_en']);
-        $data['slug'] = Str::slug($data['name_tr']);
+        $data['slug'] = $this->uniqueCategorySlug($data['name_tr']);
         GalleryCategory::create($data);
 
         return back()->with('success', __('admin.messages.created'));
@@ -71,7 +69,7 @@ class GalleryController extends Controller
     public function updateCategory(UpdateGalleryCategoryRequest $request, GalleryCategory $galleryCategory): RedirectResponse
     {
         $data = $request->validated();
-        $data['slug'] = Str::slug($data['name_tr']);
+        $data['slug'] = $this->uniqueCategorySlug($data['name_tr'], $galleryCategory->id);
         $galleryCategory->update($data);
 
         return back()->with('success', __('admin.messages.saved'));
@@ -79,10 +77,7 @@ class GalleryController extends Controller
 
     public function destroyCategory(GalleryCategory $galleryCategory): RedirectResponse
     {
-        if ($galleryCategory->items()->exists()) {
-            return back()->with('error', __('admin.gallery.category_in_use'));
-        }
-
+        $galleryCategory->items()->update(['gallery_category_id' => null]);
         $galleryCategory->delete();
 
         return back()->with('success', __('admin.messages.deleted'));
@@ -137,14 +132,28 @@ class GalleryController extends Controller
         return back()->with('success', __('admin.messages.deleted'));
     }
 
+    private function uniqueCategorySlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name) ?: 'kategori';
+        $slug = $base;
+        $suffix = 2;
+
+        while (GalleryCategory::query()
+            ->where('slug', $slug)
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
     private function isPathReferenced(string $path): bool
     {
         return BlogPost::where('featured_image', $path)->exists()
             || GalleryItem::where('image_path', $path)->exists()
             || Facility::where('image_path', $path)->exists()
-            || Trainer::where('photo_path', $path)->exists()
-            || Transformation::where('before_image', $path)->orWhere('after_image', $path)->exists()
-            || SocialPost::where('image_path', $path)->exists()
-            || Testimonial::where('photo_path', $path)->exists();
+            || Transformation::where('before_image', $path)->orWhere('after_image', $path)->exists();
     }
 }

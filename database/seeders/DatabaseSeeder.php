@@ -17,27 +17,25 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Admin',
                     'password' => Hash::make('password'),
                     'email_verified_at' => now(),
-                    'role' => 'owner',
                     'is_active' => true,
                 ],
             );
         } else {
-            $ownerEmail = env('SPORTS35_OWNER_EMAIL');
-            $ownerPassword = env('SPORTS35_OWNER_PASSWORD');
+            $adminEmail = env('SPORTS35_ADMIN_EMAIL');
+            $adminPassword = env('SPORTS35_ADMIN_PASSWORD');
 
-            if (! filled($ownerEmail) || ! filled($ownerPassword)) {
+            if (! filled($adminEmail) || ! filled($adminPassword)) {
                 throw new \RuntimeException(
-                    'Production seeding requires SPORTS35_OWNER_EMAIL and SPORTS35_OWNER_PASSWORD.',
+                    'Production seeding requires SPORTS35_ADMIN_EMAIL and SPORTS35_ADMIN_PASSWORD.',
                 );
             }
 
-            User::updateOrCreate(
-                ['email' => $ownerEmail],
+            User::query()->firstOrCreate(
+                ['email' => $adminEmail],
                 [
-                    'name' => env('SPORTS35_OWNER_NAME', 'Sports35 Owner'),
-                    'password' => Hash::make($ownerPassword),
+                    'name' => env('SPORTS35_ADMIN_NAME', 'Sports35 Admin'),
+                    'password' => Hash::make($adminPassword),
                     'email_verified_at' => now(),
-                    'role' => 'owner',
                     'is_active' => true,
                 ],
             );

@@ -3,28 +3,150 @@ import FlashMessage from '@/Components/Admin/FlashMessage';
 import Checkbox from '@/Components/Checkbox';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import Pagination from '@/Components/Admin/Pagination';
+import { Badge, Button, Empty, FilterBar, FormErrors, PageHeader, Panel, useComposer } from '@/Components/Admin/ui';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { confirmDelete } from '@/utils/confirmDelete';
-import Pagination from '@/Components/Admin/Pagination';
 
 export default function Index({ facilities, pagination = [], search = '' }) {
     const { t } = useTranslation('admin');
     const [editingId, setEditingId] = useState(null);
-    const form = useForm({ name_tr: '', name_en: '', category: 'other', description_tr: '', description_en: '', image: null, sort_order: facilities.length + 1, is_active: true });
-    const submit = (e) => { e.preventDefault(); router.post(editingId ? route('facilities.update', editingId) : route('facilities.store'), editingId ? { ...form.data, _method: 'put' } : form.data, { forceFormData: true, onSuccess: () => { form.reset(); setEditingId(null); } }); };
-    const startEdit = (item) => { setEditingId(item.id); form.setData({ name_tr: item.name_tr, name_en: item.name_en, category: item.category, description_tr: item.description_tr || '', description_en: item.description_en || '', image: null, sort_order: item.sort_order, is_active: item.is_active }); };
-    return <AdminLayout header={<h1 className="text-2xl font-bold">{t('facilities.title')}</h1>}>
-        <Head title={t('facilities.title')} /><FlashMessage />
-        <form onSubmit={(e) => { e.preventDefault(); router.get(route('facilities.index'), { search: e.currentTarget.search.value }); }} className="mb-4 flex gap-2"><TextInput name="search" defaultValue={search} placeholder={t('common.search')} /><button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white">{t('common.search')}</button></form>
-        <form onSubmit={submit} className="mb-8 grid gap-4 rounded-xl border bg-white p-6 sm:grid-cols-2">
-            <TextInput placeholder={t('facilities.name_tr')} value={form.data.name_tr} onChange={(e) => form.setData('name_tr', e.target.value)} /><TextInput placeholder={t('facilities.name_en')} value={form.data.name_en} onChange={(e) => form.setData('name_en', e.target.value)} />
-            <div><InputLabel value={t('facilities.category')} /><select className="mt-1 w-full rounded-md border-zinc-300" value={form.data.category} onChange={(e) => form.setData('category', e.target.value)}>{['cardio', 'strength', 'functional', 'locker', 'other'].map((category) => <option key={category} value={category}>{t(`facility_categories.${category}`)}</option>)}</select></div>
-            <div><InputLabel value={t('facilities.image')} /><input type="file" accept="image/*" className="mt-1 block w-full" onChange={(e) => form.setData('image', e.target.files[0])} /></div>
-            <textarea className="rounded-md border-zinc-300" placeholder={t('facilities.description_tr')} value={form.data.description_tr} onChange={(e) => form.setData('description_tr', e.target.value)} /><textarea className="rounded-md border-zinc-300" placeholder={t('facilities.description_en')} value={form.data.description_en} onChange={(e) => form.setData('description_en', e.target.value)} />
-            <label className="flex items-center gap-2"><Checkbox checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} />{t('common.active')}</label><div className="flex gap-3"><button type="submit" className="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">{editingId ? t('common.save') : t('common.create')}</button>{editingId && <button type="button" onClick={() => { form.reset(); setEditingId(null); }} className="rounded-lg border px-4 py-2 text-sm">{t('common.cancel')}</button>}</div>
-        </form>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{facilities.map((facility) => <article key={facility.id} className="overflow-hidden rounded-xl border bg-white">{facility.image_url && <img src={facility.image_url} alt={facility.name_tr} className="aspect-[16/10] w-full object-cover" />}<div className="p-4"><h2 className="font-bold">{facility.name_tr}</h2><p className="text-sm text-zinc-500">{t(`facility_categories.${facility.category}`)}</p><button onClick={() => startEdit(facility)} className="mt-3 mr-3 text-sm text-brand-red">{t('common.edit')}</button><button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('facilities.destroy', facility.id))} className="mt-3 text-sm text-red-600">{t('common.delete')}</button></div></article>)}</div><Pagination links={pagination} />
-    </AdminLayout>;
+    const form = useForm({
+        name_tr: '',
+        name_en: '',
+        category: 'other',
+        description_tr: '',
+        description_en: '',
+        image: null,
+        sort_order: facilities.length + 1,
+        is_active: true,
+    });
+    const composer = useComposer(form);
+    const open = composer.open || editingId !== null;
+
+    const submit = (event) => {
+        event.preventDefault();
+        form.transform((data) => (editingId ? { ...data, _method: 'put' } : data));
+        form.post(editingId ? route('facilities.update', editingId) : route('facilities.store'), {
+            forceFormData: true,
+            onSuccess: () => {
+                form.reset();
+                setEditingId(null);
+                composer.close();
+            },
+        });
+    };
+
+    const startEdit = (item) => {
+        setEditingId(item.id);
+        composer.show();
+        form.clearErrors();
+        form.setData({
+            name_tr: item.name_tr,
+            name_en: item.name_en,
+            category: item.category || 'other',
+            description_tr: item.description_tr || '',
+            description_en: item.description_en || '',
+            image: null,
+            sort_order: item.sort_order,
+            is_active: item.is_active,
+        });
+    };
+
+    const cancel = () => {
+        form.reset();
+        form.clearErrors();
+        setEditingId(null);
+        composer.close();
+    };
+
+    return (
+        <AdminLayout header={
+            <PageHeader
+                title={t('facilities.title')}
+                description={t('dashboard.hints.facilities')}
+                actions={<Button type="button" variant={open ? 'secondary' : 'primary'} onClick={open ? cancel : composer.show}>{open ? t('common.cancel') : t('common.create')}</Button>}
+            />
+        }>
+            <Head title={t('facilities.title')} />
+            <FlashMessage />
+
+            <FilterBar onSubmit={(event) => { event.preventDefault(); router.get(route('facilities.index'), { search: event.currentTarget.search.value }); }}>
+                <TextInput name="search" defaultValue={search} placeholder={t('common.search')} className="min-w-[14rem] flex-1" />
+                <Button type="submit" variant="secondary">{t('common.search')}</Button>
+            </FilterBar>
+
+            {open && (
+                <form onSubmit={submit} className="mt-4">
+                    <Panel>
+                        <h2 className="text-base font-semibold text-zinc-950">{editingId ? t('common.edit') : t('common.create')}</h2>
+                        <div className="mt-4"><FormErrors errors={form.errors} /></div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <InputLabel value={t('facilities.name_tr')} />
+                                <TextInput className="mt-1 w-full" value={form.data.name_tr} onChange={(event) => form.setData('name_tr', event.target.value)} />
+                            </div>
+                            <div>
+                                <InputLabel value={t('facilities.name_en')} />
+                                <TextInput className="mt-1 w-full" value={form.data.name_en} onChange={(event) => form.setData('name_en', event.target.value)} />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <InputLabel value={t('facilities.category')} />
+                                <select className="admin-control mt-1" value={form.data.category} onChange={(event) => form.setData('category', event.target.value)}>
+                                    {['cardio', 'strength', 'functional', 'locker', 'other'].map((category) => (
+                                        <option key={category} value={category}>{t(`facilities.categories.${category}`)}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <InputLabel value={t('facilities.description_tr')} />
+                                <textarea className="admin-control mt-1" rows={3} value={form.data.description_tr} onChange={(event) => form.setData('description_tr', event.target.value)} />
+                            </div>
+                            <div>
+                                <InputLabel value={t('facilities.description_en')} />
+                                <textarea className="admin-control mt-1" rows={3} value={form.data.description_en} onChange={(event) => form.setData('description_en', event.target.value)} />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <InputLabel value={t('facilities.image')} />
+                                <input type="file" accept="image/*" className="mt-1 block w-full text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-zinc-800" onChange={(event) => form.setData('image', event.target.files[0])} />
+                            </div>
+                            <label className="flex items-center gap-2 text-sm text-zinc-700">
+                                <Checkbox checked={form.data.is_active} onChange={(event) => form.setData('is_active', event.target.checked)} />
+                                {t('common.active')}
+                            </label>
+                            <div className="flex items-center gap-2">
+                                <Button type="submit" disabled={form.processing}>{editingId ? t('common.save') : t('common.create')}</Button>
+                                <Button type="button" variant="secondary" onClick={cancel}>{t('common.cancel')}</Button>
+                            </div>
+                        </div>
+                    </Panel>
+                </form>
+            )}
+
+            {facilities.length === 0 ? (
+                <div className="mt-4"><Empty>{t('common.empty')}</Empty></div>
+            ) : (
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {facilities.map((facility) => (
+                        <article key={facility.id} className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
+                            {facility.image_url && <img src={facility.image_url} alt={facility.name_tr} className="aspect-[16/10] w-full object-cover" />}
+                            <div className="p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <h2 className="font-semibold text-zinc-950">{facility.name_tr}</h2>
+                                    <Badge tone={facility.is_active ? 'success' : 'neutral'}>{facility.is_active ? t('common.active') : t('common.inactive')}</Badge>
+                                </div>
+                                <div className="mt-3 flex gap-1">
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => startEdit(facility)}>{t('common.edit')}</Button>
+                                    <Button type="button" variant="danger" size="sm" onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('facilities.destroy', facility.id))}>{t('common.delete')}</Button>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            )}
+            <Pagination links={pagination} />
+        </AdminLayout>
+    );
 }

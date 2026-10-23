@@ -3,16 +3,16 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${SPORTS35_ENV_FILE:-$ROOT_DIR/.env.production}"
-COMPOSE_FILE="$ROOT_DIR/docker-compose.production.yml"
+COMPOSE_FILES=(-f "$ROOT_DIR/docker-compose.production.yml" -f "$ROOT_DIR/docker-compose.proxy.yml")
 DB_BACKUP="${1:-}"
 STORAGE_BACKUP="${2:-}"
 
 [[ -f "$ENV_FILE" ]] || { echo "Missing production environment file: $ENV_FILE" >&2; exit 1; }
-[[ -f "$DB_BACKUP" ]] || { echo "Usage: restore-production.sh DB_BACKUP.sql.gz STORAGE_BACKUP.tar.gz" >&2; exit 1; }
-[[ -f "$STORAGE_BACKUP" ]] || { echo "Usage: restore-production.sh DB_BACKUP.sql.gz STORAGE_BACKUP.tar.gz" >&2; exit 1; }
+[[ -f "$DB_BACKUP" ]] || { echo "Usage: restore-production.sh db-<timestamp>.dump storage-<timestamp>.tar.gz" >&2; exit 1; }
+[[ -f "$STORAGE_BACKUP" ]] || { echo "Usage: restore-production.sh db-<timestamp>.dump storage-<timestamp>.tar.gz" >&2; exit 1; }
 
 compose() {
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+    docker compose --env-file "$ENV_FILE" "${COMPOSE_FILES[@]}" "$@"
 }
 
 echo "This replaces the selected production database and uploaded storage."

@@ -7,10 +7,17 @@ export default defineConfig({
     plugins: [
         laravel({
             input: 'resources/js/app.jsx',
+            ssr: 'resources/js/ssr.jsx',
             refresh: true,
         }),
         react(),
     ],
+    ssr: {
+        noExternal: true,
+    },
+    build: {
+        sourcemap: false,
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'resources/js'),

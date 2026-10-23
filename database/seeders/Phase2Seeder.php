@@ -18,24 +18,27 @@ class Phase2Seeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            GalleryCategory::updateOrCreate(
+            GalleryCategory::query()->firstOrCreate(
                 ['slug' => Str::slug($cat['name_tr'])],
                 array_merge($cat, ['slug' => Str::slug($cat['name_tr'])]),
             );
         }
 
         $settings = [
-            'contact.phone' => '+90 500 000 00 00',
-            'contact.whatsapp' => '905000000000',
-            'contact.email' => 'info@sports35.test',
-            'contact.address_tr' => 'İzmir, Türkiye',
-            'contact.address_en' => 'Izmir, Turkey',
-            'social.facebook' => 'https://facebook.com/sports35',
-            'social.instagram' => 'https://instagram.com/sports35',
-            'contact.maps_embed' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3125.0!2d27.1428!3d38.4237!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDI1JzI1LjMiTiAyN8KwMDgnMzQuMSJF!5e0!3m2!1str!2str!4v1234567890',
+            'contact.phone' => '+90 505 930 30 07',
+            'contact.whatsapp' => '905059303007',
+            'contact.address_tr' => 'İnkilap, 504/2. Sk. 3B D:1, 35380 Buca/İzmir',
+            'contact.address_en' => 'İnkilap, 504/2. Sk. 3B D:1, 35380 Buca/İzmir, Turkey',
+            'contact.maps_embed' => SiteSetting::MAPS_EMBED,
+            'contact.maps_url' => SiteSetting::MAPS_URL,
+            'video_audio' => '0',
         ];
 
         foreach ($settings as $key => $value) {
+            if (SiteSetting::query()->where('key', $key)->exists()) {
+                continue;
+            }
+
             SiteSetting::set($key, $value);
         }
     }

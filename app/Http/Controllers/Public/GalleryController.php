@@ -3,13 +3,9 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\BlogCategory;
-use App\Models\BlogPost;
 use App\Models\GalleryCategory;
 use App\Models\GalleryItem;
 use App\Models\MediaFile;
-use App\Models\SiteSetting;
-use App\Models\Transformation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,14 +16,25 @@ class GalleryController extends Controller
     {
         $categorySlug = $request->query('category');
 
-        $categories = GalleryCategory::query()
-            ->orderBy('sort_order')
-            ->get()
-            ->map(fn ($c) => [
-                'id' => $c->id,
-                'slug' => $c->slug,
-                'name' => $c->localizedName(),
-            ]);
+        $activeItems = GalleryItem::query()->where('is_active', true);
+        $categoryIdsWithItems = (clone $activeItems)
+            ->whereNotNull('gallery_category_id')
+            ->distinct()
+            ->pluck('gallery_category_id');
+        $hasUncategorized = (clone $activeItems)->whereNull('gallery_category_id')->exists();
+        $showFilters = $categoryIdsWithItems->count() + ($hasUncategorized ? 1 : 0) > 1;
+
+        $categories = $showFilters
+            ? GalleryCategory::query()
+                ->whereIn('id', $categoryIdsWithItems)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'slug' => $c->slug,
+                    'name' => $c->localizedName(),
+                ])
+            : [];
 
         $itemsQuery = GalleryItem::query()
             ->with('category')
@@ -54,7 +61,7 @@ class GalleryController extends Controller
                 'alt' => $alt ?: $item->localizedCaption() ?: __('public.gallery_page.title'),
                 'caption' => $item->localizedCaption(),
                 'instagram_url' => $item->instagram_url,
-                'category_slug' => $item->category->slug,
+                'category_slug' => $item->category?->slug,
             ];
         });
 

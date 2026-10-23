@@ -11,14 +11,26 @@ class StoreMembershipPackageRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('variation_prices')) {
+            $this->merge([
+                'variation_prices' => collect($this->input('variation_prices', []))
+                    ->map(fn ($price) => $price === '' || $price === null ? null : $price)
+                    ->all(),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
             'duration_months' => ['required', 'integer', 'min:1', 'max:24', 'unique:membership_packages,duration_months'],
-            'cash_price' => ['required', 'numeric', 'min:0'],
-            'card_price' => ['required', 'numeric', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
+            'variation_prices' => ['nullable', 'array'],
+            'variation_prices.*' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

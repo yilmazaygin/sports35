@@ -102,7 +102,7 @@ class Sports35PhotoSeeder extends Seeder
         foreach ($photos as $photo) {
             $media = $this->mediaFor($photo, $imageOptimizer);
 
-            GalleryItem::updateOrCreate(
+            GalleryItem::query()->firstOrCreate(
                 ['gallery_category_id' => $category->id, 'image_path' => $media->path],
                 [
                     'caption_tr' => $photo['caption_tr'],
@@ -146,7 +146,7 @@ class Sports35PhotoSeeder extends Seeder
         foreach ($facilities as $facility) {
             $media = $this->mediaFor($facility, $imageOptimizer);
 
-            Facility::updateOrCreate(
+            Facility::query()->firstOrCreate(
                 ['name_tr' => $facility['name_tr']],
                 [
                     'name_en' => $facility['name_en'],

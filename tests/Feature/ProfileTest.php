@@ -64,7 +64,7 @@ class ProfileTest extends TestCase
     public function test_user_can_delete_their_account(): void
     {
         $user = User::factory()->create();
-        User::factory()->create(['role' => 'owner', 'is_active' => true]);
+        User::factory()->create(['is_active' => true]);
 
         $response = $this
             ->actingAs($user)

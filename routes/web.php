@@ -18,3 +18,8 @@ if (app()->environment(['local', 'testing'])) {
         ->domain(config('app.admin_domain'))
         ->group(base_path('routes/admin.php'));
 }
+
+// Keeps missing URLs inside the web stack so the error page has the session, locale, and public layout.
+Route::fallback(function () {
+    abort(404);
+});

@@ -13,10 +13,9 @@ class SecurityHardeningTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_final_active_owner_cannot_delete_their_account(): void
+    public function test_final_active_admin_cannot_delete_their_account(): void
     {
         $owner = User::factory()->create([
-            'role' => 'owner',
             'password' => Hash::make('password'),
             'is_active' => true,
         ]);
@@ -29,14 +28,13 @@ class SecurityHardeningTest extends TestCase
         $this->assertAuthenticatedAs($owner);
     }
 
-    public function test_owner_can_delete_their_account_when_another_active_owner_remains(): void
+    public function test_admin_can_delete_their_account_when_another_active_admin_remains(): void
     {
         $owner = User::factory()->create([
-            'role' => 'owner',
             'password' => Hash::make('password'),
             'is_active' => true,
         ]);
-        User::factory()->create(['role' => 'owner', 'is_active' => true]);
+        User::factory()->create(['is_active' => true]);
 
         $this->actingAs($owner)
             ->delete('/admin/profile', ['password' => 'password'])
@@ -47,7 +45,7 @@ class SecurityHardeningTest extends TestCase
 
     public function test_svg_uploads_are_rejected_by_media_validation(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $svg = UploadedFile::fake()->create('badge.svg', 5, 'image/svg+xml');
 
         $this->actingAs($owner)
@@ -55,19 +53,19 @@ class SecurityHardeningTest extends TestCase
             ->assertSessionHasErrors('file');
     }
 
-    public function test_non_local_seeding_requires_explicit_owner_credentials(): void
+    public function test_non_local_seeding_requires_explicit_admin_credentials(): void
     {
         $this->app->detectEnvironment(fn () => 'production');
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('SPORTS35_OWNER_EMAIL');
+        $this->expectExceptionMessage('SPORTS35_ADMIN_EMAIL');
 
-        (new DatabaseSeeder())->run();
+        (new DatabaseSeeder)->run();
     }
 
     public function test_svg_content_disguised_as_a_supported_image_is_rejected(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $svg = UploadedFile::fake()->createWithContent('badge.jpg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
         $this->actingAs($owner)

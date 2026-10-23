@@ -8,6 +8,14 @@ COPY public ./public
 COPY vite.config.js tailwind.config.js postcss.config.js jsconfig.json ./
 RUN npm run build
 
+FROM node:22-alpine AS ssr
+WORKDIR /srv
+COPY --from=frontend /build/package.json /srv/package.json
+COPY --from=frontend /build/bootstrap/ssr /srv/bootstrap/ssr
+COPY bootstrap/ssr-listen.cjs /srv/bootstrap/ssr-listen.cjs
+EXPOSE 13714
+CMD ["node", "--require", "./bootstrap/ssr-listen.cjs", "bootstrap/ssr/ssr.js"]
+
 FROM composer:2 AS dependencies
 
 WORKDIR /app

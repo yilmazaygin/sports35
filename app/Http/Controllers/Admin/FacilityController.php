@@ -19,6 +19,7 @@ class FacilityController extends Controller
     {
         $search = $request->string('search')->trim()->toString();
         $facilities = Facility::query()->when($search, fn ($query) => $query->where('name_tr', 'like', "%{$search}%")->orWhere('name_en', 'like', "%{$search}%"))->orderBy('sort_order')->paginate(20)->withQueryString();
+
         return Inertia::render('Admin/Facilities/Index', [
             'facilities' => $facilities->getCollection()->map(fn (Facility $facility) => [
                 ...$facility->toArray(), 'image_url' => $facility->imageUrl(),
@@ -34,6 +35,7 @@ class FacilityController extends Controller
         $data['image_path'] = $this->imageOptimizer->optimizeAndStore($request->file('image'), 'facilities/'.date('Y/m'));
         unset($data['image']);
         Facility::create($data);
+
         return back()->with('success', __('admin.messages.created'));
     }
 
@@ -46,6 +48,7 @@ class FacilityController extends Controller
         }
         unset($data['image']);
         $facility->update($data);
+
         return back()->with('success', __('admin.messages.saved'));
     }
 
@@ -53,6 +56,7 @@ class FacilityController extends Controller
     {
         Storage::disk('public')->delete($facility->image_path);
         $facility->delete();
+
         return back()->with('success', __('admin.messages.deleted'));
     }
 

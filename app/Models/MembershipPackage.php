@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MembershipPackage extends Model
 {
     protected $fillable = [
         'duration_months',
-        'cash_price',
-        'card_price',
+        'price',
         'is_active',
         'sort_order',
     ];
@@ -17,9 +17,13 @@ class MembershipPackage extends Model
     protected function casts(): array
     {
         return [
-            'cash_price' => 'decimal:2',
-            'card_price' => 'decimal:2',
+            'price' => 'decimal:2',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function variationPrices(): HasMany
+    {
+        return $this->hasMany(MembershipPackageVariationPrice::class);
     }
 }

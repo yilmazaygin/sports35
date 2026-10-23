@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
-            $table->string('label', 100);
             $table->string('title_tr');
             $table->string('title_en');
-            $table->unsignedTinyInteger('discount_percent');
-            $table->timestamp('starts_at')->nullable();
-            $table->timestamp('ends_at')->nullable();
+            $table->text('body_tr');
+            $table->text('body_en');
+            $table->string('icon_path')->nullable();
+            $table->date('starts_on');
+            $table->date('ends_on');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

@@ -11,8 +11,7 @@ return new class extends Migration
         Schema::create('membership_packages', function (Blueprint $table) {
             $table->id();
             $table->unsignedTinyInteger('duration_months');
-            $table->decimal('cash_price', 10, 2);
-            $table->decimal('card_price', 10, 2);
+            $table->decimal('price', 10, 2);
             $table->boolean('is_active')->default(true);
             $table->unsignedTinyInteger('sort_order')->default(0);
             $table->timestamps();

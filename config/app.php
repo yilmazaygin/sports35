@@ -88,6 +88,8 @@ return [
 
     'admin_domain' => env('ADMIN_DOMAIN', 'admin.sports35.test'),
 
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'tr_TR'),
 
     /*

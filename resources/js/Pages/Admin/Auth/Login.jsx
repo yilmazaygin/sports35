@@ -82,7 +82,7 @@ export default function Login({ status }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="mt-6 w-full rounded-lg bg-brand-red px-4 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-brand-red-dark focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50"
+                        className="mt-6 w-full rounded-xl bg-brand-red px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-red-dark focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50"
                     >
                         {t('login.submit')}
                     </button>

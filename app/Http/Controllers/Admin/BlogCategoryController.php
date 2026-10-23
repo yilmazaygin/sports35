@@ -8,16 +8,12 @@ use App\Http\Requests\Admin\UpdateBlogCategoryRequest;
 use App\Models\BlogCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class BlogCategoryController extends Controller
 {
-    public function index(): Response
+    public function index(): RedirectResponse
     {
-        return Inertia::render('Admin/BlogCategories/Index', [
-            'categories' => BlogCategory::query()->orderBy('sort_order')->get(),
-        ]);
+        return redirect()->route('blog-posts.index');
     }
 
     public function store(StoreBlogCategoryRequest $request): RedirectResponse

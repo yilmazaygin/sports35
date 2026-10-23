@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+    scroll-padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@layer components {
+    .admin-control {
+        @apply w-full rounded-lg border-zinc-300 bg-white text-sm text-zinc-900 shadow-sm focus:border-brand-red focus:ring-brand-red disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400;
+    }
+}

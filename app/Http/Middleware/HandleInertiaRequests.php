@@ -2,8 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Facility;
 use App\Models\SiteSetting;
-use App\Services\StructuredDataService;
+use App\Services\PublicSeo;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,12 +37,21 @@ class HandleInertiaRequests extends Middleware
             'app' => [
                 'name' => config('app.name'),
             ],
+            'publicSiteUrl' => fn () => app()->environment(['local', 'testing'])
+                ? url('/')
+                : 'https://'.config('app.public_domain'),
             'contact' => fn () => SiteSetting::contact(),
-            'structured_data' => fn () => app(StructuredDataService::class)->localBusiness(),
-            'seo' => [
-                'site_name' => config('app.name'),
-                'default_description' => fn () => __('public.seo.default_description'),
+            'hero' => fn () => [
+                'video_audio' => SiteSetting::videoAudioEnabled(),
             ],
+            'blogEnabled' => fn () => SiteSetting::blogEnabled(),
+            'hasFacilities' => fn () => Facility::query()->where('is_active', true)->exists(),
+            'seo' => function () use ($request) {
+                $seo = app(PublicSeo::class)->forRequest($request);
+                unset($seo['json_ld']);
+
+                return $seo;
+            },
         ];
     }
 }

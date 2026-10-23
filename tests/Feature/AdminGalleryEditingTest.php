@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Facility;
 use App\Models\GalleryCategory;
 use App\Models\GalleryItem;
 use App\Models\MediaFile;
-use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +17,7 @@ class AdminGalleryEditingTest extends TestCase
 
     public function test_owner_can_update_bilingual_gallery_metadata_without_replacing_image(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $category = GalleryCategory::create(['name_tr' => 'Salon', 'name_en' => 'Gym', 'slug' => 'salon']);
         $item = GalleryItem::create([
             'gallery_category_id' => $category->id,
@@ -61,16 +61,9 @@ class AdminGalleryEditingTest extends TestCase
         ]);
     }
 
-    public function test_content_editor_can_edit_gallery_metadata_but_cannot_edit_owner_only_settings(): void
-    {
-        $editor = User::factory()->create(['role' => 'content_editor']);
-        $this->actingAs($editor)->get('/admin/gallery')->assertOk();
-        $this->actingAs($editor)->get('/admin/site-settings')->assertForbidden();
-    }
-
     public function test_gallery_edit_validation_rejects_overlong_alt_text(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $category = GalleryCategory::create(['name_tr' => 'Salon', 'name_en' => 'Gym', 'slug' => 'salon']);
         $item = GalleryItem::create(['gallery_category_id' => $category->id, 'image_path' => 'gallery/original.jpg', 'is_active' => true]);
 
@@ -82,21 +75,86 @@ class AdminGalleryEditingTest extends TestCase
         ])->assertSessionHasErrors('alt_tr');
     }
 
-    public function test_gallery_category_with_items_cannot_be_deleted(): void
+    public function test_deleting_a_category_keeps_its_images_uncategorized(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $category = GalleryCategory::create(['name_tr' => 'Salon', 'name_en' => 'Gym', 'slug' => 'salon']);
-        GalleryItem::create(['gallery_category_id' => $category->id, 'image_path' => 'gallery/used.jpg', 'is_active' => true]);
+        $other = GalleryCategory::create(['name_tr' => 'Ekipman', 'name_en' => 'Equipment', 'slug' => 'ekipman']);
+        $item = GalleryItem::create(['gallery_category_id' => $category->id, 'image_path' => 'gallery/used.jpg', 'is_active' => true]);
 
-        $this->actingAs($owner)->delete('/admin/gallery/categories/'.$category->id)->assertRedirect();
-        $this->assertDatabaseHas('gallery_categories', ['id' => $category->id]);
+        $this->actingAs($owner)->put('/admin/gallery/categories/'.$category->id, [
+            'name_tr' => 'Yeni salon',
+            'name_en' => 'New gym',
+            'sort_order' => 1,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('gallery_categories', [
+            'id' => $category->id,
+            'name_tr' => 'Yeni salon',
+            'name_en' => 'New gym',
+        ]);
+
+        $this->actingAs($owner)->post('/admin/gallery/items/'.$item->id, [
+            'gallery_category_id' => $other->id,
+            'caption_tr' => 'Taşındı',
+            'sort_order' => 0,
+            'is_active' => true,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('gallery_items', [
+            'id' => $item->id,
+            'gallery_category_id' => $other->id,
+            'image_path' => 'gallery/used.jpg',
+        ]);
+
+        $this->actingAs($owner)->delete('/admin/gallery/categories/'.$other->id)->assertRedirect();
+
+        $this->assertDatabaseMissing('gallery_categories', ['id' => $other->id]);
+        $this->assertDatabaseHas('gallery_items', [
+            'id' => $item->id,
+            'gallery_category_id' => null,
+            'image_path' => 'gallery/used.jpg',
+        ]);
+
+        $this->get('/galeri')->assertOk()->assertInertia(fn ($page) => $page
+            ->component('Public/Gallery/Index')
+            ->has('categories', 0)
+            ->where('items.0.id', $item->id)
+            ->where('items.0.category_slug', null));
+    }
+
+    public function test_gallery_filters_show_only_when_images_span_more_than_one_group(): void
+    {
+        $salon = GalleryCategory::create(['name_tr' => 'Salon', 'name_en' => 'Gym', 'slug' => 'salon', 'sort_order' => 1]);
+        $empty = GalleryCategory::create(['name_tr' => 'Boş', 'name_en' => 'Empty', 'slug' => 'bos', 'sort_order' => 2]);
+        GalleryItem::create(['gallery_category_id' => $salon->id, 'image_path' => 'gallery/one.jpg', 'is_active' => true]);
+        GalleryItem::create(['gallery_category_id' => $salon->id, 'image_path' => 'gallery/two.jpg', 'is_active' => true]);
+
+        $this->get('/galeri')->assertOk()->assertInertia(fn ($page) => $page->has('categories', 0));
+
+        GalleryItem::create(['gallery_category_id' => null, 'image_path' => 'gallery/loose.jpg', 'is_active' => true]);
+
+        $this->get('/galeri')->assertOk()->assertInertia(fn ($page) => $page
+            ->has('categories', 1)
+            ->where('categories.0.slug', 'salon')
+            ->where('categories.0.name', 'Salon'));
+
+        $athletes = GalleryCategory::create(['name_tr' => 'Yarışmacılar', 'name_en' => 'Athletes', 'slug' => 'yarismacilar', 'sort_order' => 3]);
+        GalleryItem::create(['gallery_category_id' => $athletes->id, 'image_path' => 'gallery/athlete.jpg', 'is_active' => true]);
+
+        $this->get('/galeri')->assertOk()->assertInertia(fn ($page) => $page
+            ->has('categories', 2)
+            ->where('categories.0.slug', 'salon')
+            ->where('categories.1.slug', 'yarismacilar'));
+
+        $this->assertDatabaseHas('gallery_categories', ['id' => $empty->id]);
     }
 
     public function test_gallery_delete_preserves_a_shared_image_path(): void
     {
         Storage::fake('public');
         Storage::disk('public')->put('gallery/shared.jpg', 'image');
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         $category = GalleryCategory::create(['name_tr' => 'Salon', 'name_en' => 'Gym', 'slug' => 'salon']);
         $item = GalleryItem::create(['gallery_category_id' => $category->id, 'image_path' => 'gallery/shared.jpg', 'is_active' => true]);
         Facility::create(['name_tr' => 'Alan', 'name_en' => 'Area', 'category' => 'other', 'image_path' => 'gallery/shared.jpg', 'is_active' => true, 'sort_order' => 0]);

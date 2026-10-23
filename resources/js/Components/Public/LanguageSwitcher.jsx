@@ -20,14 +20,25 @@ function TranslateIcon({ className = 'h-5 w-5' }) {
     );
 }
 
+function localeHref(pageUrl, locale) {
+    const [rawPath, rawQuery = ''] = String(pageUrl || '/').split('?');
+    const path = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+    const params = new URLSearchParams(rawQuery);
+    params.delete('lang');
+    params.set('lang', locale === 'en' ? 'en' : 'tr');
+
+    return `${path}?${params.toString()}`;
+}
+
 export default function LanguageSwitcher({ className = '' }) {
-    const { locale, locales } = usePage().props;
+    const page = usePage();
+    const { locale, locales } = page.props;
     const { t } = useTranslation();
     const otherLocale = locales.find((code) => code !== locale) ?? locales[0];
 
     return (
         <a
-            href={route('locale.switch', otherLocale)}
+            href={localeHref(page.url, otherLocale)}
             className={`inline-flex items-center justify-center rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-white ${className}`}
             aria-label={t('language.switch')}
             title={t('language.switch')}

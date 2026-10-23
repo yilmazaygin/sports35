@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+exec docker compose \
+    --env-file "${SPORTS35_ENV_FILE:-$ROOT_DIR/.env.production}" \
+    -f "$ROOT_DIR/docker-compose.production.yml" \
+    -f "$ROOT_DIR/docker-compose.proxy.yml" \
+    "$@"

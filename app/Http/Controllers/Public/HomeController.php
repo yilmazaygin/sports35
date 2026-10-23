@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
 use App\Services\PublicContentService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,20 +18,8 @@ class HomeController extends Controller
             'alert' => $this->content->todayAlert(),
             'workingHours' => $this->content->workingHours(),
             'pricing' => $this->content->pricing(),
-            'services' => $this->services(),
+            'whyUs' => SiteSetting::whyUsForLocale(),
             'facilities' => $this->content->facilities(),
-            'trainers' => $this->content->trainers(),
-            'groupClasses' => $this->content->groupClasses(),
-            'testimonials' => $this->content->testimonials(),
         ]);
-    }
-
-    private function services(): array
-    {
-        return [
-            ['key' => 'trainer_support', 'icon' => 'dumbbell'],
-            ['key' => 'modern_equipment', 'icon' => 'equipment'],
-            ['key' => 'group_classes', 'icon' => 'group'],
-        ];
     }
 }

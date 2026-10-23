@@ -3,8 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AuditLog;
-use App\Models\Lead;
-use App\Models\Trainer;
+use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -14,14 +13,21 @@ class Phase3BTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_roles_are_enforced_on_restricted_routes(): void
+    public function test_active_admins_can_open_every_panel_and_cannot_manage_accounts_there(): void
     {
-        $manager = User::factory()->create(['role' => 'manager']);
-        $editor = User::factory()->create(['role' => 'content_editor']);
+        $admin = User::factory()->create();
 
-        $this->actingAs($manager)->get('/admin/site-settings')->assertForbidden();
-        $this->actingAs($editor)->get('/admin/leads')->assertForbidden();
-        $this->actingAs($manager)->get('/admin/leads')->assertOk();
+        $this->actingAs($admin)->get('/admin/site-settings')->assertOk();
+        $this->actingAs($admin)->get('/admin/audit-logs')->assertOk();
+        $this->actingAs($admin)->get('/admin/campaigns')->assertOk();
+        $this->actingAs($admin)->get('/admin/admin-users')->assertNotFound();
+        $this->actingAs($admin)->post('/admin/admin-users', [
+            'name' => 'Other',
+            'email' => 'other@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertStatus(405);
+        $this->assertDatabaseMissing('users', ['email' => 'other@example.com']);
     }
 
     public function test_disabled_user_cannot_login(): void
@@ -33,45 +39,34 @@ class Phase3BTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_owner_can_create_staff_but_last_owner_cannot_be_removed(): void
+    public function test_audit_log_records_content_changes(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
+        $facility = Facility::create(['name_tr' => 'Kardiyo', 'name_en' => 'Cardio', 'category' => 'cardio', 'sort_order' => 1, 'is_active' => true]);
 
-        $this->actingAs($owner)->post('/admin/admin-users', [
-            'name' => 'Content Editor', 'email' => 'editor@example.com', 'role' => 'content_editor',
-            'password' => 'password123', 'password_confirmation' => 'password123',
+        $this->actingAs($owner)->put('/admin/facilities/'.$facility->id, [
+            'name_tr' => 'Kardiyo',
+            'name_en' => 'Cardio',
+            'category' => 'cardio',
+            'sort_order' => 4,
+            'is_active' => true,
         ])->assertRedirect();
-        $this->assertDatabaseHas('users', ['email' => 'editor@example.com', 'role' => 'content_editor']);
 
-        $this->actingAs($owner)->put('/admin/admin-users/'.$owner->id, [
-            'name' => $owner->name, 'email' => $owner->email, 'role' => 'manager', 'is_active' => true,
-        ])->assertRedirect();
-        $this->assertDatabaseHas('users', ['id' => $owner->id, 'role' => 'owner', 'is_active' => true]);
-    }
-
-    public function test_audit_log_records_safe_changes_without_lead_contact_or_note(): void
-    {
-        $owner = User::factory()->create(['role' => 'owner']);
-        $lead = Lead::create(['first_name' => 'Private', 'last_name' => 'Lead', 'email' => 'private@example.com', 'phone' => '05550000000', 'status' => 'new']);
-
-        $this->actingAs($owner)->put('/admin/leads/'.$lead->id, ['status' => 'contacted', 'note' => 'Sensitive internal note'])->assertRedirect();
-
-        $log = AuditLog::query()->where('auditable_type', Lead::class)->latest('id')->firstOrFail();
+        $log = AuditLog::query()->where('auditable_type', Facility::class)->where('action', 'updated')->latest('id')->firstOrFail();
         $this->assertSame($owner->id, $log->user_id);
-        $this->assertTrue($log->changes['note_changed']);
+        $this->assertSame(4, (int) $log->changes['sort_order']);
         $this->assertArrayNotHasKey('email', $log->changes);
         $this->assertArrayNotHasKey('phone', $log->changes);
-        $this->assertArrayNotHasKey('note', $log->changes);
     }
 
-    public function test_trainer_listing_is_paginated_server_side(): void
+    public function test_facility_listing_is_paginated_server_side(): void
     {
-        $owner = User::factory()->create(['role' => 'owner']);
+        $owner = User::factory()->create();
         foreach (range(1, 21) as $i) {
-            Trainer::create(['name' => 'Trainer '.$i, 'sort_order' => $i, 'is_active' => true]);
+            Facility::create(['name_tr' => 'Alan '.$i, 'name_en' => 'Area '.$i, 'category' => 'other', 'sort_order' => $i, 'is_active' => true]);
         }
 
-        $response = $this->actingAs($owner)->get('/admin/trainers?search=No-match');
+        $response = $this->actingAs($owner)->get('/admin/facilities?search=No-match');
 
         $response->assertOk();
         $this->assertStringContainsString('pagination', $response->getContent());

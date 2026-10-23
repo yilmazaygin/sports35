@@ -10,8 +10,7 @@ return new class extends Migration
     {
         Schema::create('special_days', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->string('type', 30)->default('other');
+            $table->date('date')->unique();
             $table->string('message_tr');
             $table->string('message_en');
             $table->time('opens_at')->nullable();
@@ -20,8 +19,6 @@ return new class extends Migration
             $table->boolean('show_banner')->default(true);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-
-            $table->index('date');
         });
     }
 

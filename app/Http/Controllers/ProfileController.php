@@ -52,16 +52,14 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        $isFinalActiveOwner = $user->isOwner()
-            && $user->is_active
+        $isFinalActiveAccount = $user->is_active
             && ! User::query()
-                ->where('role', 'owner')
                 ->where('is_active', true)
                 ->whereKeyNot($user->getKey())
                 ->exists();
 
-        if ($isFinalActiveOwner) {
-            return back()->with('error', 'At least one active owner account must remain.');
+        if ($isFinalActiveAccount) {
+            return back()->with('error', __('admin.profile.last_admin'));
         }
 
         Auth::logout();

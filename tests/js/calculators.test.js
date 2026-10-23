@@ -11,7 +11,7 @@ test('calculates male Mifflin-St Jeor TDEE', () => {
         calculateCalorieTarget({
             gender: 'male', age: 25, weight: 75, height: 175, activity: 'medium',
         }),
-        { bmr: 1724, calories: 2672, activityFactor: 1.55 },
+        { bmr: 1724, calories: 2672, loss: 2138, activityFactor: 1.55 },
     );
 });
 
@@ -20,7 +20,7 @@ test('calculates female Mifflin-St Jeor BMR and low activity TDEE', () => {
         calculateCalorieTarget({
             gender: 'female', age: 30, weight: 60, height: 165, activity: 'low',
         }),
-        { bmr: 1320, calories: 1584, activityFactor: 1.2 },
+        { bmr: 1320, calories: 1584, loss: 1267, activityFactor: 1.2 },
     );
 });
 

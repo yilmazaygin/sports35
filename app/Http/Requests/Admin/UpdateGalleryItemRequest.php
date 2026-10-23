@@ -14,7 +14,7 @@ class UpdateGalleryItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'gallery_category_id' => ['required', 'exists:gallery_categories,id'],
+            'gallery_category_id' => ['nullable', 'exists:gallery_categories,id'],
             'image' => ['nullable', 'image', 'max:10240'],
             'caption_tr' => ['nullable', 'string', 'max:500'],
             'caption_en' => ['nullable', 'string', 'max:500'],

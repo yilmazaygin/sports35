@@ -11,10 +11,16 @@ services:
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - sports35
+    environment:
+      INERTIA_SSR_ENABLED: "true"
+      INERTIA_SSR_URL: http://ssr:13714
+      INERTIA_SSR_ENSURE_BUNDLE_EXISTS: "false"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_started
+      ssr:
         condition: service_started
 
   nginx:
@@ -55,6 +61,17 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - sports35
+
+  ssr:
+    image: node:22-alpine
+    container_name: sports35_ssr
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: node --require ./bootstrap/ssr-listen.cjs bootstrap/ssr/ssr.js
+    volumes:
+      - ./:/var/www/html
     networks:
       - sports35
 

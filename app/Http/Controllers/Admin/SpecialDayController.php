@@ -15,8 +15,22 @@ class SpecialDayController extends Controller
     public function index(): Response
     {
         return Inertia::render('Admin/SpecialDays/Index', [
-            'specialDays' => SpecialDay::query()->orderByDesc('date')->get(),
-            'types' => ['holiday', 'renovation', 'half_day', 'closure', 'other'],
+            'specialDays' => SpecialDay::query()
+                ->orderByDesc('starts_on')
+                ->orderByDesc('id')
+                ->get()
+                ->map(fn (SpecialDay $day) => [
+                    'id' => $day->id,
+                    'starts_on' => $day->starts_on?->toDateString(),
+                    'ends_on' => $day->ends_on?->toDateString(),
+                    'message_tr' => $day->message_tr,
+                    'message_en' => $day->message_en,
+                    'opens_at' => $day->opens_at,
+                    'closes_at' => $day->closes_at,
+                    'is_closed' => $day->is_closed,
+                    'show_banner' => $day->show_banner,
+                    'is_active' => $day->is_active,
+                ]),
         ]);
     }
 

@@ -1,20 +1,23 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import FlashMessage from '@/Components/Admin/FlashMessage';
-import Checkbox from '@/Components/Checkbox';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
+import Modal from '@/Components/Modal';
 import TextInput from '@/Components/TextInput';
+import Pagination from '@/Components/Admin/Pagination';
+import { Button, Empty, FilterBar, FormErrors, PageHeader, Panel, useComposer } from '@/Components/Admin/ui';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { confirmDelete } from '@/utils/confirmDelete';
-import Pagination from '@/Components/Admin/Pagination';
 import { useState } from 'react';
 
 export default function Index({ categories, items, pagination = [], search = '' }) {
     const { t } = useTranslation('admin');
     const [editingItem, setEditingItem] = useState(null);
+    const [editingCategoryId, setEditingCategoryId] = useState(null);
 
     const catForm = useForm({ name_tr: '', name_en: '', sort_order: categories.length + 1 });
+    const categoryEditForm = useForm({ name_tr: '', name_en: '', sort_order: 0 });
     const itemForm = useForm({
         gallery_category_id: categories[0]?.id || '',
         image: null,
@@ -35,11 +38,13 @@ export default function Index({ categories, items, pagination = [], search = '' 
         sort_order: 0,
         is_active: true,
     });
+    const composer = useComposer(itemForm);
 
     const beginEdit = (item) => {
         setEditingItem(item);
+        editForm.clearErrors();
         editForm.setData({
-            gallery_category_id: item.gallery_category_id,
+            gallery_category_id: item.gallery_category_id || '',
             image: null,
             caption_tr: item.caption_tr || '',
             caption_en: item.caption_en || '',
@@ -57,105 +62,202 @@ export default function Index({ categories, items, pagination = [], search = '' 
         editForm.clearErrors();
     };
 
+    const beginCategoryEdit = (category) => {
+        setEditingCategoryId(category.id);
+        categoryEditForm.clearErrors();
+        categoryEditForm.setData({
+            name_tr: category.name_tr,
+            name_en: category.name_en,
+            sort_order: category.sort_order,
+        });
+    };
+
     return (
-        <AdminLayout header={<h1 className="text-2xl font-bold">{t('gallery.title')}</h1>}>
+        <AdminLayout header={
+            <PageHeader
+                title={t('gallery.title')}
+                description={t('dashboard.hints.gallery')}
+                actions={(
+                    <Button type="button" variant={composer.open ? 'secondary' : 'primary'} onClick={composer.toggle}>
+                        {composer.open ? t('common.cancel') : t('gallery.add_item')}
+                    </Button>
+                )}
+            />
+        }>
             <Head title={t('gallery.title')} />
             <FlashMessage />
-            {editingItem && (
-                <div className="mb-8 rounded-xl border border-brand-red/30 bg-white p-6 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between gap-4">
-                        <div>
-                            <h2 className="font-semibold">{t('gallery.edit_item')}</h2>
-                            <p className="mt-1 text-sm text-zinc-500">{t('gallery.edit_item_hint')}</p>
+            <Modal show={editingItem !== null} onClose={cancelEdit} maxWidth="2xl">
+                {editingItem && (
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            editForm.post(route('gallery.items.update', editingItem.id), { forceFormData: true, onSuccess: cancelEdit });
+                        }}
+                        className="p-6"
+                    >
+                        <div className="mb-4 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-lg font-semibold text-zinc-950">{t('gallery.edit_item')}</h2>
+                                <p className="mt-1 text-sm text-zinc-500">{t('gallery.edit_item_hint')}</p>
+                            </div>
+                            <Button type="button" variant="ghost" size="sm" onClick={cancelEdit}>{t('common.cancel')}</Button>
                         </div>
-                        <button type="button" onClick={cancelEdit} className="text-sm text-zinc-600 hover:text-zinc-900">{t('common.cancel')}</button>
-                    </div>
-                    <form onSubmit={(e) => { e.preventDefault(); editForm.post(route('gallery.items.update', editingItem.id), { forceFormData: true, onSuccess: cancelEdit }); }} className="grid gap-4 lg:grid-cols-[180px_1fr]">
-                        <div>
-                            <img src={editingItem.image_url} alt={editingItem.alt_tr || editingItem.caption_tr || editingItem.category_name || t('gallery.image')} className="aspect-square w-full rounded-lg object-cover" />
-                            <p className="mt-2 text-xs text-zinc-500">{t('gallery.image_unchanged')}</p>
+                        <FormErrors errors={editForm.errors} />
+                        <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+                            <div>
+                                <img src={editingItem.image_url} alt={editingItem.alt_tr || editingItem.caption_tr || editingItem.category_name || t('gallery.image')} className="aspect-square w-full rounded-xl object-cover" />
+                                <p className="mt-2 text-xs text-zinc-500">{t('gallery.image_unchanged')}</p>
+                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="sm:col-span-2">
+                                    <InputLabel value={t('gallery.category')} />
+                                    <select className="admin-control mt-1" value={editForm.data.gallery_category_id} onChange={(event) => editForm.setData('gallery_category_id', event.target.value)}>
+                                        <option value="">{t('gallery.uncategorized')}</option>
+                                        {categories.map((category) => <option key={category.id} value={category.id}>{category.name_tr}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <InputLabel value={t('gallery.caption_tr')} />
+                                    <TextInput className="mt-1 w-full" value={editForm.data.caption_tr} onChange={(event) => editForm.setData('caption_tr', event.target.value)} />
+                                </div>
+                                <div>
+                                    <InputLabel value={t('gallery.caption_en')} />
+                                    <TextInput className="mt-1 w-full" value={editForm.data.caption_en} onChange={(event) => editForm.setData('caption_en', event.target.value)} />
+                                </div>
+                                <div>
+                                    <InputLabel value={t('gallery.alt_tr')} />
+                                    <TextInput className="mt-1 w-full" value={editForm.data.alt_tr} onChange={(event) => editForm.setData('alt_tr', event.target.value)} />
+                                </div>
+                                <div>
+                                    <InputLabel value={t('gallery.alt_en')} />
+                                    <TextInput className="mt-1 w-full" value={editForm.data.alt_en} onChange={(event) => editForm.setData('alt_en', event.target.value)} />
+                                </div>
+                            </div>
                         </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <InputLabel value={t('gallery.caption_tr')} />
-                                <TextInput className="mt-1 w-full" value={editForm.data.caption_tr} onChange={(e) => editForm.setData('caption_tr', e.target.value)} />
-                                <InputError message={editForm.errors.caption_tr} className="mt-1" />
-                            </div>
-                            <div>
-                                <InputLabel value={t('gallery.caption_en')} />
-                                <TextInput className="mt-1 w-full" value={editForm.data.caption_en} onChange={(e) => editForm.setData('caption_en', e.target.value)} />
-                                <InputError message={editForm.errors.caption_en} className="mt-1" />
-                            </div>
-                            <div>
-                                <InputLabel value={t('gallery.alt_tr')} />
-                                <TextInput className="mt-1 w-full" value={editForm.data.alt_tr} onChange={(e) => editForm.setData('alt_tr', e.target.value)} />
-                                <InputError message={editForm.errors.alt_tr} className="mt-1" />
-                            </div>
-                            <div>
-                                <InputLabel value={t('gallery.alt_en')} />
-                                <TextInput className="mt-1 w-full" value={editForm.data.alt_en} onChange={(e) => editForm.setData('alt_en', e.target.value)} />
-                                <InputError message={editForm.errors.alt_en} className="mt-1" />
-                            </div>
-                            <div className="flex items-end gap-3 sm:col-span-2">
-                                <button type="submit" disabled={editForm.processing} className="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">{t('common.save')}</button>
-                                <button type="button" onClick={cancelEdit} className="rounded-lg border px-4 py-2 text-sm">{t('common.cancel')}</button>
-                            </div>
+                        <div className="mt-6 flex justify-end gap-2">
+                            <Button type="button" variant="secondary" onClick={cancelEdit}>{t('common.cancel')}</Button>
+                            <Button type="submit" disabled={editForm.processing}>{t('common.save')}</Button>
                         </div>
                     </form>
-                </div>
-            )}
-            <form onSubmit={(e) => { e.preventDefault(); router.get(route('gallery.index'), { search: e.currentTarget.search.value }); }} className="mb-4 flex gap-2"><TextInput name="search" defaultValue={search} placeholder={t('common.search')} /><button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white">{t('common.search')}</button></form>
+                )}
+            </Modal>
 
-            <div className="mb-8 rounded-xl border bg-white p-6">
-                <h2 className="mb-4 font-semibold">{t('gallery.add_category')}</h2>
-                <form onSubmit={(e) => { e.preventDefault(); catForm.post(route('gallery.categories.store'), { onSuccess: () => catForm.reset() }); }}
-                    className="grid gap-4 sm:grid-cols-3">
-                    <TextInput placeholder={t('gallery.name_tr')} value={catForm.data.name_tr} onChange={(e) => catForm.setData('name_tr', e.target.value)} />
-                    <TextInput placeholder={t('gallery.name_en')} value={catForm.data.name_en} onChange={(e) => catForm.setData('name_en', e.target.value)} />
-                    <button type="submit" className="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">{t('common.create')}</button>
-                </form>
-            </div>
+            <div className="grid items-start gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+                <Panel>
+                    <h2 className="text-base font-semibold text-zinc-950">{t('gallery.categories')}</h2>
+                    <p className="mt-1 text-sm leading-6 text-zinc-500">{t('gallery.categories_hint')}</p>
+                    <div className="mt-4 divide-y divide-zinc-100">
+                        {categories.length === 0 && <p className="py-4 text-sm text-zinc-500">{t('common.empty')}</p>}
+                        {categories.map((category) => (
+                            <div key={category.id} className="py-3">
+                                {editingCategoryId === category.id ? (
+                                    <form
+                                        onSubmit={(event) => {
+                                            event.preventDefault();
+                                            categoryEditForm.put(route('gallery.categories.update', category.id), { onSuccess: () => setEditingCategoryId(null) });
+                                        }}
+                                        className="space-y-2"
+                                    >
+                                        <TextInput value={categoryEditForm.data.name_tr} onChange={(event) => categoryEditForm.setData('name_tr', event.target.value)} placeholder={t('gallery.name_tr')} className="w-full" />
+                                        <TextInput value={categoryEditForm.data.name_en} onChange={(event) => categoryEditForm.setData('name_en', event.target.value)} placeholder={t('gallery.name_en')} className="w-full" />
+                                        <InputError message={categoryEditForm.errors.name_tr || categoryEditForm.errors.name_en} />
+                                        <div className="flex gap-2">
+                                            <Button type="submit" size="sm">{t('common.save')}</Button>
+                                            <Button type="button" variant="secondary" size="sm" onClick={() => setEditingCategoryId(null)}>{t('common.cancel')}</Button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="font-medium text-zinc-950">{category.name_tr}</p>
+                                            <p className="text-xs text-zinc-500">{category.name_en} · {category.items_count}</p>
+                                        </div>
+                                        <div className="flex shrink-0">
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => beginCategoryEdit(category)}>{t('common.edit')}</Button>
+                                            <Button type="button" variant="danger" size="sm" onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('gallery.categories.destroy', category.id))}>{t('common.delete')}</Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    <form
+                        onSubmit={(event) => { event.preventDefault(); catForm.post(route('gallery.categories.store'), { onSuccess: () => catForm.reset() }); }}
+                        className="mt-4 space-y-2 border-t border-zinc-100 pt-4"
+                    >
+                        <TextInput placeholder={t('gallery.name_tr')} value={catForm.data.name_tr} onChange={(event) => catForm.setData('name_tr', event.target.value)} className="w-full" />
+                        <TextInput placeholder={t('gallery.name_en')} value={catForm.data.name_en} onChange={(event) => catForm.setData('name_en', event.target.value)} className="w-full" />
+                        <InputError message={catForm.errors.name_tr || catForm.errors.name_en} />
+                        <Button type="submit" disabled={catForm.processing}>{t('gallery.add_category')}</Button>
+                    </form>
+                </Panel>
 
-            <div className="mb-8 rounded-xl border bg-white p-6">
-                <h2 className="mb-4 font-semibold">{t('gallery.add_item')}</h2>
-                <form onSubmit={(e) => { e.preventDefault(); itemForm.post(route('gallery.items.store'), { forceFormData: true, onSuccess: () => itemForm.reset() }); }}
-                    className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <InputLabel value={t('gallery.category')} />
-                        <select className="mt-1 w-full rounded-md border-zinc-300" value={itemForm.data.gallery_category_id}
-                            onChange={(e) => itemForm.setData('gallery_category_id', e.target.value)}>
-                            {categories.map((c) => <option key={c.id} value={c.id}>{c.name_tr}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <InputLabel value={t('gallery.image')} />
-                        <input type="file" accept="image/*" className="mt-1 block w-full text-sm"
-                            onChange={(e) => itemForm.setData('image', e.target.files[0])} />
-                    </div>
-                    <TextInput placeholder={t('gallery.caption_tr')} value={itemForm.data.caption_tr} onChange={(e) => itemForm.setData('caption_tr', e.target.value)} />
-                    <TextInput placeholder={t('gallery.caption_en')} value={itemForm.data.caption_en} onChange={(e) => itemForm.setData('caption_en', e.target.value)} />
-                    <TextInput placeholder="Instagram URL" value={itemForm.data.instagram_url} onChange={(e) => itemForm.setData('instagram_url', e.target.value)} />
-                    <div className="flex items-end">
-                        <button type="submit" className="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">{t('common.upload')}</button>
-                    </div>
-                </form>
-            </div>
+                <div className="space-y-4">
+                    <FilterBar onSubmit={(event) => { event.preventDefault(); router.get(route('gallery.index'), { search: event.currentTarget.search.value }); }}>
+                        <TextInput name="search" defaultValue={search} placeholder={t('common.search')} className="min-w-[14rem] flex-1" />
+                        <Button type="submit" variant="secondary">{t('common.search')}</Button>
+                    </FilterBar>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((item) => (
-                    <div key={item.id} className="overflow-hidden rounded-xl border bg-white">
-                        <img src={item.image_url} alt={item.caption_tr || item.category_name || t('gallery.image')} className="aspect-square w-full object-cover" />
-                        <div className="p-3">
-                            <p className="text-sm font-medium">{item.category_name}</p>
-                            <p className="text-xs text-zinc-500">{item.caption_tr}</p>
-                            <button onClick={() => beginEdit(item)} className="mt-2 mr-3 text-sm font-medium text-brand-red hover:underline">{t('common.edit')}</button>
-                            <button onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('gallery.items.destroy', item.id))}
-                                className="mt-2 text-sm text-red-600">{t('common.delete')}</button>
+                    {composer.open && (
+                        <Panel>
+                            <h2 className="mb-4 text-base font-semibold text-zinc-950">{t('gallery.add_item')}</h2>
+                            <form
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+                                    itemForm.post(route('gallery.items.store'), {
+                                        forceFormData: true,
+                                        onSuccess: () => {
+                                            itemForm.reset();
+                                            composer.close();
+                                        },
+                                    });
+                                }}
+                                className="grid gap-4 sm:grid-cols-2"
+                            >
+                                <div className="sm:col-span-2"><FormErrors errors={itemForm.errors} /></div>
+                                <div>
+                                    <InputLabel value={t('gallery.category')} />
+                                    <select className="admin-control mt-1" value={itemForm.data.gallery_category_id} onChange={(event) => itemForm.setData('gallery_category_id', event.target.value)}>
+                                        <option value="">{t('gallery.uncategorized')}</option>
+                                        {categories.map((category) => <option key={category.id} value={category.id}>{category.name_tr}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <InputLabel value={t('gallery.image')} />
+                                    <input type="file" accept="image/*" className="mt-1 block w-full text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-zinc-800" onChange={(event) => itemForm.setData('image', event.target.files[0])} />
+                                </div>
+                                <TextInput placeholder={t('gallery.caption_tr')} value={itemForm.data.caption_tr} onChange={(event) => itemForm.setData('caption_tr', event.target.value)} className="w-full" />
+                                <TextInput placeholder={t('gallery.caption_en')} value={itemForm.data.caption_en} onChange={(event) => itemForm.setData('caption_en', event.target.value)} className="w-full" />
+                                <TextInput placeholder="Instagram URL" value={itemForm.data.instagram_url} onChange={(event) => itemForm.setData('instagram_url', event.target.value)} className="w-full" />
+                                <div className="flex items-end">
+                                    <Button type="submit" disabled={itemForm.processing}>{t('common.upload')}</Button>
+                                </div>
+                            </form>
+                        </Panel>
+                    )}
+
+                    {items.length === 0 ? (
+                        <Empty>{t('common.empty')}</Empty>
+                    ) : (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {items.map((item) => (
+                                <article key={item.id} className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
+                                    <img src={item.image_url} alt={item.caption_tr || item.category_name || t('gallery.image')} className="aspect-square w-full object-cover" />
+                                    <div className="p-4">
+                                        <p className="text-sm font-semibold text-zinc-950">{item.category_name || t('gallery.uncategorized')}</p>
+                                        <p className="mt-1 text-sm text-zinc-500">{item.caption_tr}</p>
+                                        <div className="mt-3 flex gap-1">
+                                            <Button type="button" variant="ghost" size="sm" onClick={() => beginEdit(item)}>{t('common.edit')}</Button>
+                                            <Button type="button" variant="danger" size="sm" onClick={() => confirmDelete(t('common.confirm_delete')) && router.delete(route('gallery.items.destroy', item.id))}>{t('common.delete')}</Button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
                         </div>
-                    </div>
-                ))}
+                    )}
+                    <Pagination links={pagination} />
+                </div>
             </div>
-            <Pagination links={pagination} />
         </AdminLayout>
     );
 }

@@ -7,7 +7,7 @@ export default function Index({ posts }) {
 
     return (
         <PublicLayout>
-            <Head title={t('blog_page.title')} />
+            <Head title={t('seo.blog_title')} />
 
             <section className="bg-brand-black py-12 md:py-16">
                 <div className="mx-auto max-w-6xl px-4">
@@ -17,7 +17,7 @@ export default function Index({ posts }) {
                     </div>
 
                     {posts.length === 0 ? (
-                        <p className="text-center text-zinc-500">{t('blog_page.empty')}</p>
+                        <p className="text-center text-zinc-400">{t('blog_page.empty')}</p>
                     ) : (
                         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                             {posts.map((post) => (
@@ -26,7 +26,7 @@ export default function Index({ posts }) {
                                     className="group overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 transition hover:border-brand-red/30"
                                 >
                                     {post.featured_image && (
-                                        <img src={post.featured_image} alt={post.title} className="aspect-video w-full object-cover" />
+                                        <img src={post.featured_image} alt={post.title || t('seo.blog_title')} className="aspect-video w-full object-cover" />
                                     )}
                                     <div className="p-5">
                                         {post.category && (
@@ -41,7 +41,7 @@ export default function Index({ posts }) {
                                             <p className="mt-2 line-clamp-3 text-sm text-zinc-400">{post.excerpt}</p>
                                         )}
                                         <div className="mt-4 flex items-center justify-between">
-                                            <span className="text-xs text-zinc-500">{post.published_at}</span>
+                                            <span className="text-xs text-zinc-400">{post.published_at}</span>
                                             <Link
                                                 href={route('blog.show', post.slug)}
                                                 className="text-sm font-medium text-brand-red hover:underline"

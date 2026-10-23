@@ -11,6 +11,9 @@ const ACTIVITY_FACTORS = Object.freeze({
     high: 1.725,
 });
 
+/** Cut below maintenance calories. */
+export const WEIGHT_LOSS_PERCENT = 20;
+
 const PROTEIN_FACTORS = Object.freeze({
     cut: 2,
     maintain: 1.6,
@@ -44,6 +47,7 @@ function requiredChoice(value, choices) {
 
 /**
  * Mifflin-St Jeor BMR multiplied by a conservative activity factor.
+ * `calories` maintains weight; `loss` is that total minus WEIGHT_LOSS_PERCENT.
  * Inputs use kilograms and centimetres; output is kcal/day.
  */
 export function calculateCalorieTarget({ gender, age, weight, height, activity }) {
@@ -63,9 +67,17 @@ export function calculateCalorieTarget({ gender, age, weight, height, activity }
         throw new CalculatorInputError();
     }
 
+    const maintenance = Math.round(calories);
+    const loss = Math.round(maintenance * (1 - WEIGHT_LOSS_PERCENT / 100));
+
+    if (!Number.isFinite(loss) || loss <= 0) {
+        throw new CalculatorInputError();
+    }
+
     return {
         bmr: Math.round(bmr),
-        calories: Math.round(calories),
+        calories: maintenance,
+        loss,
         activityFactor: ACTIVITY_FACTORS[validActivity],
     };
 }

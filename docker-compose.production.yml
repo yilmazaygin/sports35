@@ -1,3 +1,5 @@
+name: sports35
+
 services:
   app:
     build:
@@ -13,11 +15,17 @@ services:
       - sports35_storage:/var/www/html/storage
     networks:
       - sports35
+    environment:
+      INERTIA_SSR_ENABLED: "true"
+      INERTIA_SSR_URL: http://ssr:13714
+      INERTIA_SSR_ENSURE_BUNDLE_EXISTS: "false"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ssr:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "php-fpm -t"]
       interval: 30s
@@ -44,8 +52,6 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
-    env_file:
-      - ${SPORTS35_ENV_FILE:-.env.production}
     environment:
       POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE is required}
       POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME is required}
@@ -75,6 +81,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  ssr:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.production
+      target: ssr
+    image: sports35-ssr:production
+    restart: unless-stopped
+    networks:
+      - sports35
 
   worker:
     image: sports35-app:production

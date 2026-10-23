@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateWorkingHoursRequest;
+use App\Models\SiteSetting;
 use App\Models\WorkingHour;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -26,18 +27,26 @@ class WorkingHoursController extends Controller
 
         return Inertia::render('Admin/WorkingHours/Edit', [
             'hours' => $hours,
+            'layout' => WorkingHour::layout(),
         ]);
     }
 
     public function update(UpdateWorkingHoursRequest $request): RedirectResponse
     {
-        foreach ($request->validated('hours') as $hourData) {
-            WorkingHour::where('id', $hourData['id'])->update([
-                'opens_at' => $hourData['is_closed'] ? null : $hourData['opens_at'],
-                'closes_at' => $hourData['is_closed'] ? null : $hourData['closes_at'],
-                'is_closed' => $hourData['is_closed'],
+        $layout = $request->validated('layout');
+        $groups = collect($request->validated('groups'))->keyBy('key');
+
+        foreach (WorkingHour::LAYOUTS[$layout] as $key => $days) {
+            $group = $groups->get($key);
+
+            WorkingHour::query()->whereIn('day_key', $days)->update([
+                'opens_at' => $group['is_closed'] ? null : $group['opens_at'],
+                'closes_at' => $group['is_closed'] ? null : $group['closes_at'],
+                'is_closed' => $group['is_closed'],
             ]);
         }
+
+        SiteSetting::set('working_hours.layout', $layout);
 
         return back()->with('success', __('admin.messages.saved'));
     }

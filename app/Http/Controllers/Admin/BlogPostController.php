@@ -7,11 +7,12 @@ use App\Http\Requests\Admin\StoreBlogPostRequest;
 use App\Http\Requests\Admin\UpdateBlogPostRequest;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
+use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
 
 class BlogPostController extends Controller
 {
@@ -19,14 +20,30 @@ class BlogPostController extends Controller
     {
         $search = $request->string('search')->trim()->toString();
         $status = $request->string('status')->toString();
+
         return Inertia::render('Admin/BlogPosts/Index', [
             'posts' => BlogPost::query()
                 ->with('category:id,name_tr,name_en')
-                ->when($search !== '', fn ($q) => $q->where(function ($query) use ($search) { $query->where('title_tr', 'like', "%{$search}%")->orWhere('title_en', 'like', "%{$search}%"); }))
+                ->when($search !== '', fn ($q) => $q->where(function ($query) use ($search) {
+                    $query->where('title_tr', 'like', "%{$search}%")->orWhere('title_en', 'like', "%{$search}%");
+                }))
                 ->when(in_array($status, ['published', 'draft'], true), fn ($q) => $q->where('is_published', $status === 'published'))
                 ->latest()->paginate(20)->withQueryString(),
-            'search' => $search, 'status' => $status,
+            'search' => $search,
+            'status' => $status,
+            'categories' => BlogCategory::query()->orderBy('sort_order')->orderBy('id')->get(),
         ]);
+    }
+
+    public function updateVisibility(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        SiteSetting::set('blog.enabled', $request->boolean('enabled') ? '1' : '0');
+
+        return back()->with('success', __('admin.messages.saved'));
     }
 
     public function create(): Response
@@ -40,7 +57,7 @@ class BlogPostController extends Controller
     public function store(StoreBlogPostRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['slug'] = Str::slug($data['title_tr']);
+        $data['slug'] = $this->uniqueSlug($data['title_tr']);
 
         BlogPost::create($data);
 
@@ -57,10 +74,7 @@ class BlogPostController extends Controller
 
     public function update(UpdateBlogPostRequest $request, BlogPost $blogPost): RedirectResponse
     {
-        $data = $request->validated();
-        $data['slug'] = Str::slug($data['title_tr']);
-
-        $blogPost->update($data);
+        $blogPost->update($request->validated());
 
         return back()->with('success', __('admin.messages.saved'));
     }
@@ -70,5 +84,20 @@ class BlogPostController extends Controller
         $blogPost->delete();
 
         return back()->with('success', __('admin.messages.deleted'));
+    }
+
+    private function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title);
+        $base = $base !== '' ? $base : 'yazi';
+        $slug = $base;
+        $suffix = 2;
+
+        while (BlogPost::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

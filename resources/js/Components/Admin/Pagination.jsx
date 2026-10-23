@@ -1,6 +1,38 @@
 import { Link } from '@inertiajs/react';
 
+function cleanLabel(label) {
+    return label
+        .replace(/&laquo;|&raquo;|‹|›/g, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 export default function Pagination({ links = [] }) {
-    if (!links.length || links.length <= 3) return null;
-    return <nav className="mt-5 flex flex-wrap gap-1" aria-label="Pagination">{links.map((link, index) => link.url ? <Link key={index} href={link.url} preserveScroll className={`rounded border px-3 py-1 text-sm ${link.active ? 'border-brand-red bg-brand-red text-white' : 'border-zinc-200 bg-white text-zinc-700'}`} dangerouslySetInnerHTML={{ __html: link.label }} /> : <span key={index} className="rounded border border-zinc-100 px-3 py-1 text-sm text-zinc-400" dangerouslySetInnerHTML={{ __html: link.label }} />)}</nav>;
+    if (!links.length || links.length <= 3) {
+        return null;
+    }
+
+    return (
+        <nav className="mt-6 flex flex-wrap items-center justify-end gap-1" aria-label="Pagination">
+            {links.map((link, index) => {
+                const label = cleanLabel(link.label);
+                const className = `min-w-9 rounded-lg px-3 py-1.5 text-center text-sm font-medium ${link.active ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-700 ring-1 ring-zinc-200 hover:bg-zinc-50'}`;
+
+                if (!link.url) {
+                    return (
+                        <span key={index} className="min-w-9 rounded-lg px-3 py-1.5 text-center text-sm text-zinc-400">
+                            {label}
+                        </span>
+                    );
+                }
+
+                return (
+                    <Link key={index} href={link.url} preserveScroll className={className}>
+                        {label}
+                    </Link>
+                );
+            })}
+        </nav>
+    );
 }
